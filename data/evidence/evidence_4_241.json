@@ -1,0 +1,163 @@
+{
+  "event_id": "evt_4_241",
+  "timestamp_utc": "2026-09-25T05:06:04.000000Z",
+  "timestamp_pc": "2026-09-25T10:36:04.106352",
+  "session_id": 4,
+  "epoch_id": 241,
+  "location": {
+    "latitude": 23.1043678,
+    "longitude": 72.5924936,
+    "altitude_m": 72.49
+  },
+  "security_features": {
+    "disp_haversine": 0.3263,
+    "vel_kinematic": 0.3263,
+    "acc_kinematic": 0.0611,
+    "jerk_kinematic": 0.3922,
+    "bearing_rate": 0.0,
+    "HDOP": 2.0,
+    "VDOP": 0.99,
+    "fix_integrity": 0.5715,
+    "sat_count_tot": 6.0,
+    "sat_churn": null
+  },
+  "physical_rules": {
+    "is_anomalous": false,
+    "triggered_count": 0,
+    "total_rules_evaluated": 9,
+    "max_severity": "INFO",
+    "triggered_rules": [],
+    "all_rules": [
+      {
+        "rule_id": "PR_ACC_001",
+        "feature": "acc_kinematic",
+        "observed_value": 0.0611350552389732,
+        "threshold": 4.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Acceleration (0.06 m/s\u00b2) is within plausible physical limits."
+      },
+      {
+        "rule_id": "PR_JERK_001",
+        "feature": "jerk_kinematic",
+        "observed_value": 0.3922383388564622,
+        "threshold": 12.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Jerk (0.39 m/s\u00b3) is within plausible physical limits."
+      },
+      {
+        "rule_id": "PR_VEL_001",
+        "feature": "vel_kinematic",
+        "observed_value": 0.3262594803120309,
+        "threshold": 50.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Kinematic velocity (0.33 m/s) is within plausible bounds."
+      },
+      {
+        "rule_id": "PR_DISP_001",
+        "feature": "disp_haversine",
+        "observed_value": 0.3262594803120309,
+        "threshold": 50.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Haversine displacement (0.33 m) is plausible."
+      },
+      {
+        "rule_id": "PR_BEAR_001",
+        "feature": "bearing_rate",
+        "observed_value": 0.0,
+        "threshold": 90.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Receiver velocity below bearing evaluation threshold; bearing rate fluctuation is benign stationary noise."
+      },
+      {
+        "rule_id": "PR_HDOP_001",
+        "feature": "HDOP",
+        "observed_value": 2.0,
+        "threshold": 4.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "HDOP (2.00) is within nominal bounds."
+      },
+      {
+        "rule_id": "PR_VDOP_001",
+        "feature": "VDOP",
+        "observed_value": 0.99,
+        "threshold": 5.0,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "VDOP (0.99) is within nominal bounds."
+      },
+      {
+        "rule_id": "PR_INT_001",
+        "feature": "fix_integrity",
+        "observed_value": 0.5715470515695067,
+        "threshold": 0.5,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Fix integrity (0.57) is healthy."
+      },
+      {
+        "rule_id": "PR_SAT_001",
+        "feature": "sat_count_tot",
+        "observed_value": 6.0,
+        "threshold": 6,
+        "triggered": false,
+        "severity": "INFO",
+        "explanation": "Tracked satellite count (6) is robust."
+      }
+    ]
+  },
+  "isolation_forest": {
+    "is_anomaly": false,
+    "anomaly_score": 0.4752,
+    "raw_score": -0.6318,
+    "decision_offset": -0.6384,
+    "model_version": "iforest-v1.0"
+  },
+  "xgboost": {
+    "available": false,
+    "status": "UNFITTED_PENDING_LABELLED_SCENARIOS",
+    "attack_probability": null,
+    "predicted_label": null,
+    "model_version": "xgb-v1.0",
+    "note": "Supervised XGBoost requires verified labelled attack scenario data."
+  },
+  "temporal_model": {
+    "status": "INFERRED",
+    "is_anomaly": true,
+    "reconstruction_error": 44.1311,
+    "temporal_anomaly_score": 1.0,
+    "error_threshold": 0.7993,
+    "feature_errors": {
+      "disp_haversine": 36.8244,
+      "vel_kinematic": 37.0728,
+      "acc_kinematic": 192.5163,
+      "jerk_kinematic": 167.2858,
+      "bearing_rate": 6.8439,
+      "HDOP": 0.2795,
+      "VDOP": 0.2583,
+      "fix_integrity": 0.054,
+      "sat_count_tot": 0.1756,
+      "sat_churn": 0.0
+    },
+    "model_version": "lstm-temporal-v1.0"
+  },
+  "data_quality": {
+    "fix_quality": 1,
+    "satellites_used": 6,
+    "satellites_in_view": 10,
+    "hdop": 2.0,
+    "avg_cno": 26.89,
+    "data_quality_flag": "VALID|PRN_UNAVAILABLE"
+  },
+  "model_versions": {
+    "physical_rules_version": "prules-v1.0",
+    "isolation_forest_version": "iforest-v1.0",
+    "xgboost_version": "xgb-v1.0",
+    "temporal_model_version": "lstm-temporal-v1.0"
+  }
+}
