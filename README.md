@@ -59,9 +59,9 @@ Isolation Forest
      ↓
 Evidence Bundle
      ↓
-3-Agent Security SOC  (Phase 6 — NEXT)
+3-Agent Security SOC  (Phase 6 — COMPLETE)
      ↓
-      RAG             (Phase 7 — Future)
+      RAG             (Phase 7 — NEXT)
      ↓
   Final Query         (Phase 8 — Future)
 ```
@@ -70,7 +70,7 @@ Evidence Bundle
 
 ## 4. Current Implementation Status
 
-LOCUS is engineered through an 8-phase developmental lifecycle. **Phases 1 through 5 are fully implemented, verified, and complete.**
+LOCUS is engineered through an 8-phase developmental lifecycle. **Phases 1 through 6 are fully implemented, verified, and complete.**
 
 | Phase | Phase Title | Status | Scope & Deliverables |
 | :---: | :--- | :---: | :--- |
@@ -79,8 +79,8 @@ LOCUS is engineered through an 8-phase developmental lifecycle. **Phases 1 throu
 | **Phase 3** | **Structured GNSS Dataset** | **COMPLETE** | Canonical, immutable observation layer (`data/structured/locus_structured_gnss.csv`). |
 | **Phase 4** | **10-D Security Feature Engineering** | **COMPLETE** | Official 10-D vector computation (`src/features/security_features.py` → `data/features/locus_security_features.csv`). |
 | **Phase 5** | **Detection & Machine Learning** | **COMPLETE** | Physical Rules + Isolation Forest + XGBoost + LSTM Autoencoder + Evidence Fusion (`data/evidence/`). |
-| **Phase 6** | **3-Agent Security SOC** | **NEXT** | Autonomous 3-tier agent hierarchy (Integrity, Temporal Threat, Master SOC). |
-| **Phase 7** | **RAG Knowledge Base** | **FUTURE** | Grounding knowledge base (ICAO Annex 10, RTCA DO-229E, CISA, MITRE). |
+| **Phase 6** | **3-Agent Security SOC** | **COMPLETE** | Autonomous 3-tier agent hierarchy (`src/soc/`): Integrity, Temporal Threat, Master SOC Orchestrator (`data/incidents/`). |
+| **Phase 7** | **RAG Knowledge Base** | **NEXT** | Grounding knowledge base (ICAO Annex 10, RTCA DO-229E, CISA, MITRE). |
 | **Phase 8** | **Final Query & SOC Dashboard** | **FUTURE** | Interactive SOC query CLI and real-time dashboard. |
 
 ---
@@ -221,14 +221,19 @@ pip install -r requirements.txt
 ```
 
 ### Running Verification Tests
-Execute the full automated test suite covering Phases 1–5:
+Execute the full automated test suite covering Phases 1–6:
 ```bash
-python -m unittest discover -s tests -p "test_*.py"
+python -m unittest tests.test_parsing tests.test_processing tests.test_security_features tests.test_detection tests.test_soc_agents
 ```
 
-### Re-running Phase 5 Multi-Detector Training & Evidence Generation
+### Running Phase 5 Multi-Detector Training & Evidence Generation
 ```bash
 python -m src.detection.pipeline
+```
+
+### Running Phase 6 3-Agent Security SOC Pipeline
+```bash
+python -m src.soc.soc_pipeline
 ```
 
 ---
@@ -243,12 +248,7 @@ python -m src.detection.pipeline
 
 ## 10. Future Phases
 
-- **Phase 6: 3-Agent Agentic Security SOC (NEXT)**
-  Implement the 3-tier autonomous agent hierarchy:
-  - Agent 1: GNSS Integrity Agent (Physical Rules + Observation Context)
-  - Agent 2: Temporal Threat Correlation Agent (Isolation Forest + LSTM Sequence + XGBoost)
-  - Agent 3: Master SOC Orchestrator (Multi-agent consensus, DEFCON rating, root-cause attribution, mitigation directives)
-- **Phase 7: Regulatory RAG Knowledge Base**
+- **Phase 7: Regulatory RAG Knowledge Base (NEXT)**
   Vectorized grounding knowledge base linking detected anomalies directly to ICAO Annex 10, RTCA DO-229E (RAIM FDE), CISA PNT Guidelines, and MITRE ATT&CK for Space.
 - **Phase 8: Final Query Interface & Real-Time SOC Dashboard**
   Interactive command-line query engine and live dashboard for security operations center analysts.

@@ -1,0 +1,70 @@
+{
+  "incident_id": "inc_6f36b65af6f2",
+  "event_id": "evt_4_261",
+  "timestamp_utc": "2026-09-25T05:06:24.000000Z",
+  "session_id": 4,
+  "epoch_id": 261,
+  "defcon_level": "DEFCON_2",
+  "attack_vector": "SUBTLE_SPOOFING_WALKOFF",
+  "consensus_status": "DISCREPANCY_FLAGGED",
+  "overall_confidence": 0.86,
+  "mitigation_actions": [
+    "REJECT_EPOCH_MEASUREMENT",
+    "SWITCH_TO_INERTIAL_DEAD_RECKONING",
+    "TRIGGER_RAIM_EXCLUSION"
+  ],
+  "agent_1_assessment": {
+    "agent_id": "agent_1_integrity",
+    "event_id": "evt_4_261",
+    "timestamp_utc": "2026-09-25T05:06:24.000000Z",
+    "session_id": 4,
+    "epoch_id": 261,
+    "integrity_status": "INTEGRITY_NOMINAL",
+    "confidence_score": 0.98,
+    "kinematic_health": 1.0,
+    "geometry_health": 1.0,
+    "physical_violation_count": 0,
+    "violated_rules": [],
+    "max_rule_severity": "INFO",
+    "discard_recommended": false,
+    "verdict_summary": "NOMINAL: Kinematics and constellation geometry strictly conform to physical laws."
+  },
+  "agent_2_assessment": {
+    "agent_id": "agent_2_temporal_threat",
+    "event_id": "evt_4_261",
+    "timestamp_utc": "2026-09-25T05:06:24.000000Z",
+    "session_id": 4,
+    "epoch_id": 261,
+    "threat_classification": "SPOOFING_TRAJECTORY_INJECTION",
+    "confidence_score": 0.88,
+    "persistence_count": 42,
+    "persistence_ratio": 1.0,
+    "detector_convergence": 0.3333,
+    "active_detectors_count": 3,
+    "anomalous_detectors_count": 1,
+    "primary_feature_contributors": [
+      "bearing_rate",
+      "acc_kinematic",
+      "jerk_kinematic"
+    ],
+    "lstm_reconstruction_error": 7.4336,
+    "iforest_anomaly_score": 0.215,
+    "xgboost_prediction": null,
+    "threat_summary": "Sustained temporal drift detected across 42 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected."
+  },
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=42, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 42 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: bearing_rate, acc_kinematic, jerk_kinematic.",
+  "location": {
+    "latitude": 23.1043604,
+    "longitude": 72.592498,
+    "altitude_m": 72.24
+  },
+  "key_features": {
+    "disp_haversine": 0.0456,
+    "vel_kinematic": 0.0456,
+    "acc_kinematic": -0.2338,
+    "jerk_kinematic": -0.2725,
+    "HDOP": 1.67,
+    "fix_integrity": 0.6428,
+    "sat_count_tot": 9.0
+  }
+}

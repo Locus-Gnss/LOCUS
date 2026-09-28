@@ -1,0 +1,66 @@
+{
+  "incident_id": "inc_803e2c6b2d35",
+  "event_id": "evt_4_226",
+  "timestamp_utc": "2026-09-25T05:05:49.000000Z",
+  "session_id": 4,
+  "epoch_id": 226,
+  "defcon_level": "DEFCON_2",
+  "attack_vector": "PERSISTENT_TEMPORAL_DRIFT",
+  "consensus_status": "DISCREPANCY_FLAGGED",
+  "overall_confidence": 0.86,
+  "mitigation_actions": [
+    "REJECT_EPOCH_MEASUREMENT",
+    "SWITCH_TO_INERTIAL_DEAD_RECKONING",
+    "TRIGGER_RAIM_EXCLUSION"
+  ],
+  "agent_1_assessment": {
+    "agent_id": "agent_1_integrity",
+    "event_id": "evt_4_226",
+    "timestamp_utc": "2026-09-25T05:05:49.000000Z",
+    "session_id": 4,
+    "epoch_id": 226,
+    "integrity_status": "INTEGRITY_NOMINAL",
+    "confidence_score": 0.98,
+    "kinematic_health": 1.0,
+    "geometry_health": 1.0,
+    "physical_violation_count": 0,
+    "violated_rules": [],
+    "max_rule_severity": "INFO",
+    "discard_recommended": false,
+    "verdict_summary": "NOMINAL: Kinematics and constellation geometry strictly conform to physical laws."
+  },
+  "agent_2_assessment": {
+    "agent_id": "agent_2_temporal_threat",
+    "event_id": "evt_4_226",
+    "timestamp_utc": "2026-09-25T05:05:49.000000Z",
+    "session_id": 4,
+    "epoch_id": 226,
+    "threat_classification": "PERSISTENT_DRIFT",
+    "confidence_score": 0.85,
+    "persistence_count": 7,
+    "persistence_ratio": 0.875,
+    "detector_convergence": 0.5,
+    "active_detectors_count": 2,
+    "anomalous_detectors_count": 1,
+    "primary_feature_contributors": [],
+    "lstm_reconstruction_error": 0.0,
+    "iforest_anomaly_score": 0.7431,
+    "xgboost_prediction": null,
+    "threat_summary": "Persistent anomalous dynamics over 7 consecutive epochs (ratio: 0.88). Multi-detector convergence: 0.50."
+  },
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (PERSISTENT_TEMPORAL_DRIFT) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=PERSISTENT_DRIFT, PersistenceStreak=7, WindowRatio=0.88, Convergence=0.50. Persistent anomalous dynamics over 7 consecutive epochs (ratio: 0.88). Multi-detector convergence: 0.50.",
+  "location": {
+    "latitude": 23.104489,
+    "longitude": 72.5924002,
+    "altitude_m": 100.53
+  },
+  "key_features": {
+    "disp_haversine": 0.7898,
+    "vel_kinematic": 0.7898,
+    "acc_kinematic": 0.229,
+    "jerk_kinematic": 0.1607,
+    "HDOP": 2.01,
+    "fix_integrity": 0.5119,
+    "sat_count_tot": 6.0
+  }
+}

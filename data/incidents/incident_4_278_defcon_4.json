@@ -1,0 +1,69 @@
+{
+  "incident_id": "inc_d3d2263e3f46",
+  "event_id": "evt_4_278",
+  "timestamp_utc": "2026-09-25T05:06:41.000000Z",
+  "session_id": 4,
+  "epoch_id": 278,
+  "defcon_level": "DEFCON_4",
+  "attack_vector": "MULTIPATH_INTERFERENCE",
+  "consensus_status": "MAJORITY",
+  "overall_confidence": 0.82,
+  "mitigation_actions": [
+    "INCREASE_MONITORING_FREQUENCY",
+    "DEGRADE_CONFIDENCE_WEIGHT"
+  ],
+  "agent_1_assessment": {
+    "agent_id": "agent_1_integrity",
+    "event_id": "evt_4_278",
+    "timestamp_utc": "2026-09-25T05:06:41.000000Z",
+    "session_id": 4,
+    "epoch_id": 278,
+    "integrity_status": "INTEGRITY_NOMINAL",
+    "confidence_score": 0.98,
+    "kinematic_health": 1.0,
+    "geometry_health": 1.0,
+    "physical_violation_count": 0,
+    "violated_rules": [],
+    "max_rule_severity": "INFO",
+    "discard_recommended": false,
+    "verdict_summary": "NOMINAL: Kinematics and constellation geometry strictly conform to physical laws."
+  },
+  "agent_2_assessment": {
+    "agent_id": "agent_2_temporal_threat",
+    "event_id": "evt_4_278",
+    "timestamp_utc": "2026-09-25T05:06:41.000000Z",
+    "session_id": 4,
+    "epoch_id": 278,
+    "threat_classification": "MULTIPATH_INTERFERENCE",
+    "confidence_score": 0.8,
+    "persistence_count": 0,
+    "persistence_ratio": 0.5333,
+    "detector_convergence": 0.0,
+    "active_detectors_count": 3,
+    "anomalous_detectors_count": 0,
+    "primary_feature_contributors": [
+      "acc_kinematic",
+      "HDOP",
+      "jerk_kinematic"
+    ],
+    "lstm_reconstruction_error": 0.2334,
+    "iforest_anomaly_score": 0.0839,
+    "xgboost_prediction": null,
+    "threat_summary": "Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.53). Consistent with localized multipath."
+  },
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=MULTIPATH_INTERFERENCE, PersistenceStreak=0, WindowRatio=0.53, Convergence=0.00. Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.53). Consistent with localized multipath. | Primary error drivers: acc_kinematic, HDOP, jerk_kinematic.",
+  "location": {
+    "latitude": 23.104357,
+    "longitude": 72.5924964,
+    "altitude_m": 72.13
+  },
+  "key_features": {
+    "disp_haversine": 0.0667,
+    "vel_kinematic": 0.0667,
+    "acc_kinematic": 0.0434,
+    "jerk_kinematic": 0.0446,
+    "HDOP": 1.65,
+    "fix_integrity": 0.6591,
+    "sat_count_tot": 10.0
+  }
+}

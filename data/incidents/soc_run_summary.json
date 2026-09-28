@@ -1,0 +1,31 @@
+{
+  "total_epochs_processed": 150,
+  "defcon_distribution": {
+    "DEFCON_5": 39,
+    "DEFCON_4": 33,
+    "DEFCON_3": 0,
+    "DEFCON_2": 78,
+    "DEFCON_1": 0
+  },
+  "attack_vectors": {
+    "BENIGN_NOMINAL": 39,
+    "MULTIPATH_INTERFERENCE": 33,
+    "PERSISTENT_TEMPORAL_DRIFT": 11,
+    "SUBTLE_SPOOFING_WALKOFF": 67
+  },
+  "consensus_distribution": {
+    "NOMINAL": 39,
+    "MAJORITY": 33,
+    "DISCREPANCY_FLAGGED": 78
+  },
+  "mitigations_issued": {
+    "MAINTAIN_STANDARD_FIX": 39,
+    "INCREASE_MONITORING_FREQUENCY": 33,
+    "DEGRADE_CONFIDENCE_WEIGHT": 33,
+    "REJECT_EPOCH_MEASUREMENT": 78,
+    "SWITCH_TO_INERTIAL_DEAD_RECKONING": 78,
+    "TRIGGER_RAIM_EXCLUSION": 78
+  },
+  "notable_incidents_saved": 111,
+  "stream_log": "data\\incidents\\soc_incidents_stream.jsonl"
+}

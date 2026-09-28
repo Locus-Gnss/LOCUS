@@ -1,0 +1,69 @@
+{
+  "incident_id": "inc_f87f7ad99d87",
+  "event_id": "evt_4_283",
+  "timestamp_utc": "2026-09-25T05:06:46.000000Z",
+  "session_id": 4,
+  "epoch_id": 283,
+  "defcon_level": "DEFCON_4",
+  "attack_vector": "MULTIPATH_INTERFERENCE",
+  "consensus_status": "MAJORITY",
+  "overall_confidence": 0.82,
+  "mitigation_actions": [
+    "INCREASE_MONITORING_FREQUENCY",
+    "DEGRADE_CONFIDENCE_WEIGHT"
+  ],
+  "agent_1_assessment": {
+    "agent_id": "agent_1_integrity",
+    "event_id": "evt_4_283",
+    "timestamp_utc": "2026-09-25T05:06:46.000000Z",
+    "session_id": 4,
+    "epoch_id": 283,
+    "integrity_status": "INTEGRITY_NOMINAL",
+    "confidence_score": 0.98,
+    "kinematic_health": 1.0,
+    "geometry_health": 1.0,
+    "physical_violation_count": 0,
+    "violated_rules": [],
+    "max_rule_severity": "INFO",
+    "discard_recommended": false,
+    "verdict_summary": "NOMINAL: Kinematics and constellation geometry strictly conform to physical laws."
+  },
+  "agent_2_assessment": {
+    "agent_id": "agent_2_temporal_threat",
+    "event_id": "evt_4_283",
+    "timestamp_utc": "2026-09-25T05:06:46.000000Z",
+    "session_id": 4,
+    "epoch_id": 283,
+    "threat_classification": "TRANSIENT_ANOMALY",
+    "confidence_score": 0.82,
+    "persistence_count": 0,
+    "persistence_ratio": 0.2,
+    "detector_convergence": 0.0,
+    "active_detectors_count": 3,
+    "anomalous_detectors_count": 0,
+    "primary_feature_contributors": [
+      "acc_kinematic",
+      "jerk_kinematic",
+      "disp_haversine"
+    ],
+    "lstm_reconstruction_error": 0.3015,
+    "iforest_anomaly_score": 0.0835,
+    "xgboost_prediction": null,
+    "threat_summary": "Isolated transient anomaly (streak: 0). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact."
+  },
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=TRANSIENT_ANOMALY, PersistenceStreak=0, WindowRatio=0.20, Convergence=0.00. Isolated transient anomaly (streak: 0). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact. | Primary error drivers: acc_kinematic, jerk_kinematic, disp_haversine.",
+  "location": {
+    "latitude": 23.1043562,
+    "longitude": 72.5924963,
+    "altitude_m": 72.11
+  },
+  "key_features": {
+    "disp_haversine": 0.0111,
+    "vel_kinematic": 0.0111,
+    "acc_kinematic": -0.0134,
+    "jerk_kinematic": -0.0267,
+    "HDOP": 1.65,
+    "fix_integrity": 0.6411,
+    "sat_count_tot": 10.0
+  }
+}
