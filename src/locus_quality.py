@@ -245,6 +245,8 @@ def clean_telemetry(input_path: str, output_path: str) -> pd.DataFrame:
 
 if __name__ == "__main__":
     base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    in_file = os.path.join(base_dir, "locus_telemetry_features.csv")
+    in_file = os.path.join(base_dir, "data", "raw", "locus_telemetry_features.csv")
+    if not os.path.exists(in_file):
+        in_file = os.path.join(base_dir, "locus_telemetry_features.csv")
     out_file = os.path.join(base_dir, "data", "processed", "locus_telemetry_clean.csv")
     clean_telemetry(in_file, out_file)

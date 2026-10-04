@@ -199,7 +199,9 @@ class GNSSPreprocessor:
 if __name__ == "__main__":
     # Go up 3 levels from src/parsing/preprocessing.py to workspace root
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-    in_file = os.path.join(base_dir, "locus_telemetry_features.csv")
+    in_file = os.path.join(base_dir, "data", "raw", "locus_telemetry_features.csv")
+    if not os.path.exists(in_file):
+        in_file = os.path.join(base_dir, "locus_telemetry_features.csv")
     out_file = os.path.join(base_dir, "data", "structured", "locus_structured_gnss.csv")
 
     preprocessor = GNSSPreprocessor()
