@@ -245,6 +245,6 @@ The audit reveals four critical methodological flaws in the Phase 5 baseline imp
 8. **Step 8: Evidence Bundle Update & End-to-End Verification**
    - Update `EvidenceBundle` schema with `model_version`, `model_training_date`, and `feature_schema_version`.
    - Run end-to-end integration tests on all test scenarios (normal, missing, invalid, sudden kinematic change, etc.).
-   - Update documentation (`README.md`, `docs/IMPLEMENTATION_PROGRESS.md`, `docs/MODEL_CARD.md`, `docs/PHASE_5_5_FINE_TUNING.md`).
+   - Update documentation (`README.md`, `docs/IMPLEMENTATION_PROGRESS.md`, `docs/MODEL_CARD.md`, `docs/MODEL_FINE_TUNING.md`).
    - Create reproducible configuration `configs/model_training.yaml`.
    - Push commit to GitHub.

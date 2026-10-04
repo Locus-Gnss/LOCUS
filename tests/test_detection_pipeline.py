@@ -1,7 +1,7 @@
 """
 LOCUS Phase 5.5 — End-to-End Pipeline & Scenario Verification Tests
 
-Module: tests/test_phase_5_5_pipeline.py
+Module: tests/test_detection_pipeline.py
 Validates the end-to-end integration:
 structured dataset -> 10-D features -> physical rules -> Isolation Forest -> XGBoost -> LSTM -> Evidence Bundle.
 

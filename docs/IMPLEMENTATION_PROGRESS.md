@@ -184,10 +184,10 @@ This document tracks the milestone progress, implementation details, validation 
   - `reports/temporal_model_tuning.json`
   - `reports/temporal_model_evaluation.md`
   - `reports/MODEL_COMPARISON.md`
-  - `docs/PHASE_5_MODEL_AUDIT.md`
-  - `docs/PHASE_5_5_FINE_TUNING.md`
+  - `docs/MODEL_AUDIT.md`
+  - `docs/MODEL_FINE_TUNING.md`
   - `docs/MODEL_CARD.md`
-  - `tests/test_phase_5_5_pipeline.py`
+  - `tests/test_detection_pipeline.py`
 - **Validation**:
   - 49 unit and integration tests passing (100% pass rate).
   - 8 operational scenario tests verified (Normal, Missing, Invalid, Timestamp Gap, Sudden Kinematics, Nav Degradation, Constellation Starvation, Creeping Temporal Drift).
@@ -208,7 +208,7 @@ This document tracks the milestone progress, implementation details, validation 
   - `src/agents/integrity_agent.py`: Agent 1 (GNSS Integrity Agent) evaluating Newtonian physical plausibility, fix integrity, navigation quality (HDOP/VDOP), satellite behaviour (starvation & churn), and 10-D feature-level anomalies.
   - `src/agents/temporal_threat_agent.py`: Agent 2 (Temporal / Threat Agent) evaluating rolling-window persistence, multi-detector convergence, LSTM per-feature reconstruction error attribution, and XGBoost supervised status.
   - `src/agents/master_soc_agent.py`: Agent 3 (Master SOC Agent / Evidence Orchestrator) synthesizing multi-agent findings, resolving conflicts (e.g. physical breach immediate override), producing grounded citations without hallucination, rating DEFCON 1–5 risk, and issuing mitigation directives.
-  - `docs/PHASE_6_SOC_AGENTS.md`: Technical specification for Phase 6 multi-agent architecture and operational protocols.
+  - `docs/SOC_AGENTS.md`: Technical specification for Phase 6 multi-agent architecture and operational protocols.
   - `tests/test_agents.py`: Rigorous unit and integration test suite validating physical invariant checks, temporal persistence, conflict resolution, sensor data immutability, and zero evidence fabrication.
 - **Files Created / Modified**:
   - `src/agents/__init__.py`
@@ -216,7 +216,7 @@ This document tracks the milestone progress, implementation details, validation 
   - `src/agents/temporal_threat_agent.py`
   - `src/agents/master_soc_agent.py`
   - `tests/test_agents.py`
-  - `docs/PHASE_6_SOC_AGENTS.md`
+  - `docs/SOC_AGENTS.md`
 - **Validation**:
   - Automated tests: `tests/test_agents.py` (14 tests pass), `tests/test_soc_agents.py` (10 tests pass).
   - Full test suite: 63 unit and integration tests passing across all test modules (100% pass rate).

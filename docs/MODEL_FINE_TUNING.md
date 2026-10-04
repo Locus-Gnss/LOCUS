@@ -165,7 +165,7 @@ The Evidence Bundle schema ([`src/evidence/evidence_bundle.py`](../src/evidence/
 
 ## 9. Full Scenario Verification Summary
 
-All 8 mandatory operational scenarios were executed via [`tests/test_phase_5_5_pipeline.py`](../tests/test_phase_5_5_pipeline.py):
+All 8 mandatory operational scenarios were executed via [`tests/test_detection_pipeline.py`](../tests/test_detection_pipeline.py):
 1. **Normal GNSS observation**: Clean nominal bundle generated; zero rule violations; normal IF and LSTM scores.
 2. **Missing-data case**: Robust median imputation for missing `sat_churn` and DOP without pipeline crashes.
 3. **Invalid-data case**: Gracefully sanitized non-finite values (`inf`, `-inf`, string corruption) into valid evidence representations.
