@@ -107,7 +107,8 @@ class TestSOCDataService:
         dummy_svc = SOCDataService(
             telemetry_path="data/non_existent.csv",
             features_path="data/non_existent.csv",
-            evidence_dir="data/non_existent_evidence"
+            evidence_dir="data/non_existent_evidence",
+            api_base_url="http://127.0.0.1:9999"  # Offline API port to force local file fallback
         )
         assert dummy_svc.load_telemetry_dataset().empty
         assert dummy_svc.load_features_dataset().empty

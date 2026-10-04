@@ -19,10 +19,28 @@ from src.query.query_processor import SecurityQueryProcessor
 from src.evidence.evidence_bundle import EvidenceBundle
 
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="LOCUS GNSS Security Operations Center API",
     description="Cyber-Physical GNSS Defense, Multi-Agent SOC, and Grounded RAG Query System",
     version="1.0.0"
+)
+
+# Configure CORS for development and frontend dashboard
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8501",
+        "http://127.0.0.1:8501",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Initialize query processor

@@ -16,12 +16,13 @@ import numpy as np
 
 from src.query.query_processor import SecurityQueryProcessor
 from src.evidence.evidence_bundle import EvidenceBundle
+from src.ui.api_client import SOCApiClient
 
 
 class SOCDataService:
     """
     Central data provider for the LOCUS SOC GUI.
-    Decoupled from presentation, fully testable and cache-friendly.
+    Consumes the decoupled FastAPI REST backend while maintaining graceful local fallback.
     """
 
     def __init__(
@@ -29,14 +30,25 @@ class SOCDataService:
         telemetry_path: str = "data/processed/locus_telemetry_clean.csv",
         features_path: str = "data/features/locus_security_features.csv",
         evidence_dir: str = "data/evidence",
-        config_path: str = "configs/model_training.yaml"
+        config_path: str = "configs/model_training.yaml",
+        api_base_url: str = "http://127.0.0.1:8000"
     ):
         self.telemetry_path = telemetry_path
         self.features_path = features_path
         self.evidence_dir = evidence_dir
         self.config_path = config_path
+        self.api_client = SOCApiClient(base_url=api_base_url)
         self.processor = SecurityQueryProcessor(evidence_dir=evidence_dir)
         self._feature_bounds = self._load_calibrated_bounds()
+
+    def check_backend_status(self) -> Tuple[bool, str]:
+        """
+        Check if FastAPI REST backend is reachable.
+        """
+        ok, health, err = self.api_client.check_health()
+        if ok and health.get("status") == "HEALTHY":
+            return True, "ONLINE (REST API: http://127.0.0.1:8000)"
+        return False, f"OFFLINE ({err or 'Connection refused'}) - Local Fallback Active"
 
     def _load_calibrated_bounds(self) -> Dict[str, Dict[str, Any]]:
         """
@@ -110,8 +122,29 @@ class SOCDataService:
 
     def get_latest_telemetry_metrics(self) -> Dict[str, Any]:
         """
-        Extract the latest valid telemetry metrics.
+        Extract the latest valid telemetry metrics via FastAPI REST API or local dataset fallback.
         """
+        ok, res, _ = self.api_client.get_latest_telemetry()
+        if ok and isinstance(res, dict) and res.get("telemetry"):
+            tel = res["telemetry"]
+            return {
+                "has_data": True,
+                "timestamp": tel.get("timestamp_utc"),
+                "latitude": tel.get("latitude", 0.0),
+                "longitude": tel.get("longitude", 0.0),
+                "altitude_m": tel.get("altitude_m", 0.0),
+                "speed_kmh": tel.get("speed_kmh", 0.0),
+                "heading_deg": tel.get("heading_deg", 0.0),
+                "satellites_used": tel.get("satellites_used", 0),
+                "satellites_in_view": tel.get("satellites_in_view", 0),
+                "hdop": tel.get("hdop", 0.0),
+                "vdop": tel.get("vdop", 0.0),
+                "fix_quality": tel.get("fix_quality", 0),
+                "session_id": tel.get("session_id", 0),
+                "epoch_id": tel.get("epoch_id", 0),
+                "source": "REST_API"
+            }
+
         df = self.load_telemetry_dataset()
         if df.empty:
             return {
@@ -134,7 +167,8 @@ class SOCDataService:
             "vdop": float(last.get("vdop", 0.0)),
             "fix_quality": int(last.get("fix_quality", 0)),
             "session_id": int(last.get("session_id", 0)),
-            "epoch_id": int(last.get("epoch_id", 0))
+            "epoch_id": int(last.get("epoch_id", 0)),
+            "source": "LOCAL_FALLBACK"
         }
 
     def get_canonical_10d_features(self, bundle: Optional[EvidenceBundle] = None) -> List[Dict[str, Any]]:
@@ -145,9 +179,13 @@ class SOCDataService:
         if bundle and bundle.security_features:
             features_dict = bundle.security_features
         else:
-            df = self.load_features_dataset()
-            if not df.empty:
-                features_dict = df.iloc[-1].to_dict()
+            ok, res, _ = self.api_client.get_latest_features()
+            if ok and isinstance(res, dict) and res.get("features"):
+                features_dict = res["features"]
+            else:
+                df = self.load_features_dataset()
+                if not df.empty:
+                    features_dict = df.iloc[-1].to_dict()
 
         result = []
         canonical_keys = [
@@ -191,8 +229,14 @@ class SOCDataService:
 
     def get_alert_center_records(self) -> List[Dict[str, Any]]:
         """
-        Extract structured alert records across all indexed evidence bundles.
+        Extract structured alert records via FastAPI REST API or local dataset fallback.
         """
+        ok, alerts, _ = self.api_client.get_alerts()
+        if ok and isinstance(alerts, list) and len(alerts) > 0:
+            order = {"CRITICAL": 0, "HIGH": 1, "WARNING": 2, "INFO": 3}
+            alerts.sort(key=lambda x: order.get(x.get("severity", "INFO"), 4))
+            return alerts
+
         events = self.processor.list_available_events()
         alerts = []
         for ev in events:
@@ -238,7 +282,6 @@ class SOCDataService:
                 "location": b.location
             })
 
-        # Sort so CRITICAL / HIGH are at the top
         order = {"CRITICAL": 0, "HIGH": 1, "WARNING": 2, "INFO": 3}
         alerts.sort(key=lambda x: order.get(x["severity"], 4))
         return alerts
@@ -260,6 +303,10 @@ class SOCDataService:
         lstm_exists = os.path.exists("models/temporal/lstm_autoencoder.pt") or \
                       os.path.exists("models/production/temporal/lstm_autoencoder.pt")
 
+        # Check live REST API
+        api_ok, api_data, api_err = self.api_client.check_health()
+        api_status = "HEALTHY (ONLINE)" if api_ok else f"OFFLINE ({api_err or 'Connection refused'})"
+
         return [
             {"component": "7Semi L89HA GNSS Receiver", "status": "CONNECTED (REPLAY)" if tel_exists else "DISCONNECTED", "layer": "Hardware", "details": "NMEA sentence ingestion active"},
             {"component": "NMEA Sentence Parser", "status": "READY" if tel_exists else "OFFLINE", "layer": "Ingestion", "details": "GGA, GSA, RMC, GSV sentence parsing"},
@@ -274,5 +321,5 @@ class SOCDataService:
             {"component": "Agent 2: Temporal Threat Agent", "status": "ACTIVE_READY", "layer": "Agentic SOC", "details": "Persistence streaks & drift correlation"},
             {"component": "Agent 3: Master SOC Orchestrator", "status": "ACTIVE_READY", "layer": "Agentic SOC", "details": "Consensus rating & DEFCON arbitration"},
             {"component": "Regulatory RAG Knowledge Base", "status": f"INDEXED ({rag_chunks} chunks)" if rag_chunks > 0 else "NO CHUNKS", "layer": "Knowledge Subsystem", "details": "ICAO Annex 10, RTCA DO-229E, CISA, MITRE"},
-            {"component": "FastAPI SOC REST Backend", "status": "HEALTHY", "layer": "Service API", "details": "REST endpoints on port 8000"}
+            {"component": "FastAPI SOC REST Backend", "status": api_status, "layer": "Service API", "details": "REST endpoints on port 8000"}
         ]

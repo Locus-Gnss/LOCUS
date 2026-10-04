@@ -116,11 +116,14 @@ else:
     defcon_level = "DEFCON_5"
     confidence = 1.0
 
+api_online, _ = service.check_backend_status()
+
 # 1. Render Top Cybersecurity Navbar
 render_navbar(
     conn_info=conn_info,
     system_status="HEALTHY",
-    defcon_level=defcon_level
+    defcon_level=defcon_level,
+    api_online=api_online
 )
 
 # Latest Telemetry Metrics for KPI cards

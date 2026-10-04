@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 import streamlit as st
 
 
-def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_level: str = "DEFCON_5"):
+def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_level: str = "DEFCON_5", api_online: bool = True):
     """
     Render top executive cybersecurity header bar.
     """
@@ -32,14 +32,18 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
         st.caption("Live Observation, Cybersecurity & Unified Security for GNSS | 3-Agent SOC & Regulatory RAG")
 
     with col_meta:
-        c1, c2, c3 = st.columns(3)
+        c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.markdown(f"**System**<br/><span class='badge-normal'>● {system_status}</span>", unsafe_allow_html=True)
         with c2:
-            badge_class = "badge-normal" if is_live else "badge-info"
-            st.markdown(f"**Mode**<br/><span class='{badge_class}'>● {mode_text}</span>", unsafe_allow_html=True)
+            api_badge = "badge-normal" if api_online else "badge-warning"
+            api_label = "REST API" if api_online else "FALLBACK"
+            st.markdown(f"**Backend**<br/><span class='{api_badge}'>● {api_label}</span>", unsafe_allow_html=True)
         with c3:
-            st.markdown(f"**UTC Time**<br/><code style='font-size: 11px;'>{now_utc}</code>", unsafe_allow_html=True)
+            badge_class = "badge-normal" if is_live else "badge-info"
+            st.markdown(f"**Mode**<br/><span class='{badge_class}'>● {'LIVE' if is_live else 'REPLAY'}</span>", unsafe_allow_html=True)
+        with c4:
+            st.markdown(f"**UTC Time**<br/><code style='font-size: 10px;'>{now_utc.split()[1]}</code>", unsafe_allow_html=True)
 
     # Secondary Data Provenance Banner
     st.markdown(
