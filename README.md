@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status](https://img.shields.io/badge/Phases%201--5.5-COMPLETE-brightgreen.svg)]()
-[![Phase 6 Status](https://img.shields.io/badge/Phase%206-READY-blue.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-49%20Passing%20(100%25)-success.svg)]()
+[![Status](https://img.shields.io/badge/Phases%201--6-COMPLETE-brightgreen.svg)]()
+[![Phase 6 Status](https://img.shields.io/badge/Phase%206%20SOC-OPERATIONAL-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-63%20Passing%20(100%25)-success.svg)]()
 
 ---
 
@@ -12,7 +12,7 @@
 
 **LOCUS** (Live Observation, Cybersecurity & Unified Security for GNSS) is a modular, cyber-physical intrusion detection and threat attribution framework designed to safeguard civil and industrial Global Navigation Satellite System (GNSS) receivers. 
 
-By unifying hardware-level telemetry, multi-sentence NMEA stream processing, Newtonian kinematic constraints, machine learning anomaly detection, and deep temporal modeling, LOCUS defends critical positioning, navigation, and timing (PNT) infrastructure against hostile radio-frequency threats including **spoofing (trajectory injection and drag-off)**, **wideband jamming**, **meaconing/replay**, and **multipath reflections**.
+By unifying hardware-level telemetry, multi-sentence NMEA stream processing, Newtonian kinematic constraints, machine learning anomaly detection, deep temporal modeling, and autonomous multi-agent SOC reasoning, LOCUS defends critical positioning, navigation, and timing (PNT) infrastructure against hostile radio-frequency threats including **spoofing (trajectory injection and drag-off)**, **wideband jamming**, **meaconing/replay**, and **multipath reflections**.
 
 ---
 
@@ -29,7 +29,8 @@ Modern civilian infrastructure—ranging from autonomous transport, maritime shi
 2. **Physically Grounded 10-D Security Feature Representation**: Formulate a strict 10-dimensional cybersecurity vector capturing Newtonian kinematics, receiver dilution of precision, and constellation dynamics.
 3. **Multi-Detector Consensus Defense**: Combine deterministic physical rules, unsupervised spatial isolation forests, supervised classification infrastructure, and deep LSTM autoencoders.
 4. **Model Optimization & Leakage Elimination (Phase 5.5)**: Systematically tune hyperparameters using leakage-free chronological partitioning and calibrate physical invariant thresholds.
-5. **Structured Evidence Generation**: Assemble detector findings into tamper-evident, standardized **Evidence Bundles** ready for autonomous AI SOC investigation and incident response.
+5. **Structured Evidence Generation**: Assemble detector findings into tamper-evident, standardized **Evidence Bundles**.
+6. **Autonomous 3-Agent Security SOC (Phase 6)**: Multi-agent SOC layer (GNSS Integrity Agent, Temporal/Threat Agent, Master SOC Orchestrator) synthesizing evidence, resolving conflicts, assessing DEFCON risk, and issuing mitigation actions without sensor mutation or evidence fabrication.
 
 ---
 
@@ -56,14 +57,20 @@ Phase 5.5 Multi-Detector Quad (Production Models):
      ↓
 Evidence Fusion Engine (evidence_*.json)
      ↓
-READY FOR PHASE 6 (Agentic Security SOC)
+Phase 6: 3-Agent Autonomous Security SOC:
+  ├── Agent 1: GNSS Integrity Agent (Physical Plausibility, Fix Integrity, Geometry)
+  ├── Agent 2: Temporal / Threat Agent (Persistence, Streak Tracking, LSTM Attribution)
+  └── Agent 3: Master SOC Agent Orchestrator (Conflict Resolution, DEFCON 1-5, Grounded Citations)
+     ↓
+Structured SOC Orchestration Result (JSON)
 ```
 
 ### Technology Stack
 - **Languages**: Python 3.10+
 - **Machine Learning & Deep Learning**: PyTorch (`torch`), Scikit-Learn (`scikit-learn`), XGBoost (`xgboost`)
 - **Numerical & Data Processing**: NumPy, Pandas, SciPy, Joblib
-- **Testing**: Python `pytest` & `unittest` suite (49 automated unit and integration tests passing 100%)
+- **Multi-Agent SOC**: Custom Agentic SOC Architecture (`src/agents/`)
+- **Testing**: Python `pytest` & `unittest` suite (63 automated unit and integration tests passing 100%)
 
 ---
 

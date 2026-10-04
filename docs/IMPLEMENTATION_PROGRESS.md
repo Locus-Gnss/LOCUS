@@ -12,7 +12,7 @@ This document tracks the milestone progress, implementation details, validation 
 - **Phase 4 — COMPLETE** (Security Feature Engineering)
 - **Phase 5 — COMPLETE** (Detection & Machine Learning Pipeline)
 - **Phase 5.5 — COMPLETE** (Model Fine-Tuning, Optimization & Leakage Audit)
-- **Phase 6 — READY / SEPARATE TRACK** (3-Agent Agentic Security SOC)
+- **Phase 6 — COMPLETE** (3-Agent Agentic Security SOC in `src/agents/`: Integrity, Temporal/Threat, Master SOC Orchestrator)
 - **Phase 7 — NOT STARTED** (Regulatory RAG Knowledge Base)
 - **Phase 8 — NOT STARTED** (Final Query & SOC Dashboard)
 
@@ -203,32 +203,23 @@ This document tracks the milestone progress, implementation details, validation 
 
 ### Phase 6 — 3-Agent Security SOC
 - **Status**: **COMPLETE**
-- **Objective**: Implement the autonomous 3-tier Security Operations Center (SOC) agent hierarchy to deliberate over Evidence Bundles, resolve multi-agent consensus, rate threat severity (DEFCON 1 to 5), attribute root causes, and mandate actionable mitigations.
+- **Objective**: Implement the autonomous 3-tier Security Operations Center (SOC) agent hierarchy to deliberate over Evidence Bundles, resolve multi-agent consensus, rate threat severity (DEFCON 1 to 5), attribute root causes, cite grounded evidence without sensor mutation or fabrication, and mandate actionable mitigations.
 - **Implementation**:
-  - `src/soc/models.py`: Typed contracts, enums (`DefconLevel`, `IntegrityStatus`, `ThreatClassification`, `MitigationAction`), and structured incident reports (`SOCIncidentReport`).
-  - `src/soc/integrity_agent.py`: Agent 1 (GNSS Integrity Agent) evaluating Newtonian kinematics, geometric dilution of precision, and observation health with continuous health indices.
-  - `src/soc/temporal_threat_agent.py`: Agent 2 (Temporal Threat Correlation Agent) evaluating rolling-window persistence, multi-detector convergence, and LSTM per-feature error attribution.
-  - `src/soc/master_soc_orchestrator.py`: Agent 3 (Master SOC Orchestrator) resolving multi-agent consensus, assigning DEFCON 1–5 threat ratings, classifying attack vectors, and issuing prioritized mitigation directives.
-  - `src/soc/soc_pipeline.py`: SOC Pipeline executing stream and batch analysis, logging notable incidents and summaries.
-  - `docs/SOC_AGENTIC_ARCHITECTURE.md`: Master architectural specification for Phase 6.
+  - `src/agents/integrity_agent.py`: Agent 1 (GNSS Integrity Agent) evaluating Newtonian physical plausibility, fix integrity, navigation quality (HDOP/VDOP), satellite behaviour (starvation & churn), and 10-D feature-level anomalies.
+  - `src/agents/temporal_threat_agent.py`: Agent 2 (Temporal / Threat Agent) evaluating rolling-window persistence, multi-detector convergence, LSTM per-feature reconstruction error attribution, and XGBoost supervised status.
+  - `src/agents/master_soc_agent.py`: Agent 3 (Master SOC Agent / Evidence Orchestrator) synthesizing multi-agent findings, resolving conflicts (e.g. physical breach immediate override), producing grounded citations without hallucination, rating DEFCON 1–5 risk, and issuing mitigation directives.
+  - `docs/PHASE_6_SOC_AGENTS.md`: Technical specification for Phase 6 multi-agent architecture and operational protocols.
+  - `tests/test_agents.py`: Rigorous unit and integration test suite validating physical invariant checks, temporal persistence, conflict resolution, sensor data immutability, and zero evidence fabrication.
 - **Files Created / Modified**:
-  - `src/soc/__init__.py`
-  - `src/soc/models.py`
-  - `src/soc/integrity_agent.py`
-  - `src/soc/temporal_threat_agent.py`
-  - `src/soc/master_soc_orchestrator.py`
-  - `src/soc/soc_pipeline.py`
-  - `tests/test_soc_agents.py`
-  - `docs/SOC_AGENTIC_ARCHITECTURE.md`
-  - `data/incidents/` (111 incident JSON files + consolidated stream)
+  - `src/agents/__init__.py`
+  - `src/agents/integrity_agent.py`
+  - `src/agents/temporal_threat_agent.py`
+  - `src/agents/master_soc_agent.py`
+  - `tests/test_agents.py`
+  - `docs/PHASE_6_SOC_AGENTS.md`
 - **Validation**:
-  - Automated tests: `tests/test_soc_agents.py` (10 tests pass in 0.02s).
-  - Full test suite: 41 unit and integration tests passing (100% pass rate).
-  - Executed over 150-epoch validation stream (`data/evidence/evidence_stream_sample.jsonl`), generating 111 notable incident reports and operational summary.
-- **Outputs**:
-  - `data/incidents/incident_*.json` (111 structured incident reports).
-  - `data/incidents/soc_incidents_stream.jsonl`.
-  - `data/incidents/soc_run_summary.json`.
+  - Automated tests: `tests/test_agents.py` (14 tests pass), `tests/test_soc_agents.py` (10 tests pass).
+  - Full test suite: 63 unit and integration tests passing across all test modules (100% pass rate).
 - **Commit Hash**: `[Current Phase 6 Deliverable]`
 
 ---
