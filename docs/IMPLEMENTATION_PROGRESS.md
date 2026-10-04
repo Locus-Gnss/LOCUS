@@ -13,8 +13,9 @@ This document tracks the milestone progress, implementation details, validation 
 - **Phase 5 — COMPLETE** (Detection & Machine Learning Pipeline)
 - **Phase 5.5 — COMPLETE** (Model Fine-Tuning, Optimization & Leakage Audit)
 - **Phase 6 — COMPLETE** (3-Agent Agentic Security SOC in `src/agents/`: Integrity, Temporal/Threat, Master SOC Orchestrator)
-- **Phase 7 — NOT STARTED** (Regulatory RAG Knowledge Base)
-- **Phase 8 — NOT STARTED** (Final Query & SOC Dashboard)
+- **Phase 7 — COMPLETE** (Regulatory RAG Knowledge Base in `src/rag/`)
+- **Phase 8 — COMPLETE** (Final Security Query System & REST API in `src/query/` and `src/api/`)
+- **Phase 9 — COMPLETE** (LOCUS GUI / SOC Dashboard in `src/ui/` and `dashboard.py`)
 
 ---
 
@@ -224,16 +225,70 @@ This document tracks the milestone progress, implementation details, validation 
 
 ---
 
-### Phase 7 — RAG Knowledge Base
-- **Status**: **NOT STARTED**
-- **Target Deliverables**:
-  - Vectorized regulatory standards index (ICAO Annex 10, RTCA DO-229E, CISA PNT Guidelines, MITRE ATT&CK for Space).
-  - Automated incident enrichment engine with compliance citations.
+### Phase 7 — Regulatory RAG Knowledge Base
+- **Status**: **COMPLETE**
+- **Objective**: Construct the standards-grounded Retrieval-Augmented Generation (RAG) subsystem for technical context, regulatory citation, and explainability without mutating sensor measurements.
+- **Implementation**:
+  - `src/rag/document_ingestion.py`: Chunker and metadata extractor indexing ICAO Annex 10, RTCA DO-229E, CISA PNT Best Practices, and MITRE ATT&CK for Space.
+  - `src/rag/retriever.py`: Semantic vector store with cosine similarity retrieval.
+  - `src/rag/rag_engine.py`: Master RAG engine integrating with Agent 3 (Master SOC Orchestrator).
+- **Files Created / Modified**:
+  - `src/rag/__init__.py`
+  - `src/rag/document_ingestion.py`
+  - `src/rag/retriever.py`
+  - `src/rag/rag_engine.py`
+  - `knowledge_base/*.md`
+  - `tests/test_rag.py`
+- **Validation**:
+  - Automated tests: `tests/test_rag.py` (9 tests pass).
 
 ---
 
-### Phase 8 — Final Query & SOC Dashboard
-- **Status**: **NOT STARTED**
-- **Target Deliverables**:
-  - Interactive operator CLI query processor.
-  - Real-time SOC dashboard and REST API server.
+### Phase 8 — Final Security Query System & REST API
+- **Status**: **COMPLETE**
+- **Objective**: Build the unified security query resolution engine and decoupled REST API backend.
+- **Implementation**:
+  - `src/query/query_processor.py`: 6-stage query lifecycle executing intent parsing, event retrieval, 3-Agent SOC deliberation, RAG grounding, and response synthesis adhering to official output schema.
+  - `src/api/app.py`: High-performance FastAPI server exposing endpoints `/api/health`, `/api/events`, `/api/query`, `/api/soc/deliberate`, etc.
+  - `docs/FINAL_SYSTEM_ARCHITECTURE.md`: Master architectural document.
+- **Files Created / Modified**:
+  - `src/query/query_processor.py`
+  - `src/api/app.py`
+  - `docs/FINAL_SYSTEM_ARCHITECTURE.md`
+  - `tests/test_query_system.py`
+- **Validation**:
+  - Automated tests: `tests/test_query_system.py` (11 tests pass).
+
+---
+
+### Phase 9 — LOCUS GUI / SOC Dashboard
+- **Status**: **COMPLETE**
+- **Objective**: Build the user-facing cybersecurity SOC dashboard representing the complete LOCUS pipeline.
+- **Implementation**:
+  - `src/ui/dashboard.py` / `dashboard.py`: Master Streamlit SOC Console with cyber aesthetics, top navigation bar, 6 executive KPI cards, and responsive layout.
+  - `src/ui/data_service.py`: Central data service providing cached access to telemetry, 10-D features, alerts, evidence bundles, and system health checks.
+  - `src/ui/components/`: Modular component architecture:
+    - `navbar.py`: Executive header with connection status, mode badge, and UTC time.
+    - `kpis.py`: 6 mandatory KPI cards (GNSS Status, Security Status, Satellites, HDOP, Speed, Active Alerts).
+    - `telemetry_panel.py`: Live & Replay telemetry graphs (Speed, HDOP, Satellites, Heading, Altitude vs Time).
+    - `map_panel.py`: OpenStreetMap trajectory map color-coded by NORMAL, WARNING, ANOMALY.
+    - `features_panel.py`: Canonical 10-D Security Feature Vector monitor with calibrated bounds.
+    - `detection_panel.py`: Multi-detector quad outputs (Physical Rules, Isolation Forest, XGBoost, LSTM Autoencoder).
+    - `alert_center.py`: Filterable alert management queue with drilldown trigger.
+    - `evidence_panel.py`: Evidence Bundle forensic viewer with provenance and temporal timeline.
+    - `agent_soc_panel.py`: 3-Agent SOC deliberation visual flow and findings.
+    - `rag_panel.py`: Regulatory RAG Knowledge search panel.
+    - `query_terminal.py`: Natural-Language SOC Assistant terminal.
+    - `health_panel.py`: Real-time system health matrix.
+  - Enriched REST API: Added `/api/telemetry/latest`, `/api/telemetry/history`, `/api/features/latest`, `/api/alerts`, `/api/evidence/{id}`, `/api/agents/status`, `/api/rag/query`.
+- **Files Created / Modified**:
+  - `src/ui/data_service.py`
+  - `src/ui/dashboard.py`
+  - `src/ui/components/*.py`
+  - `src/api/app.py`
+  - `dashboard.py`
+  - `tests/test_gui_integration.py`
+  - `docs/PHASE_9_GUI_REPORT.md`
+- **Validation**:
+  - Automated tests: `tests/test_gui_integration.py` (15 tests pass).
+  - Full repository test suite: 98 unit and integration tests passing 100%.

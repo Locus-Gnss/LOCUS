@@ -97,6 +97,291 @@ def get_event_detail(event_id: str):
     return bundle.to_dict()
 
 
+@app.get("/api/evidence/{event_id}")
+def get_evidence_bundle(event_id: str):
+    """
+    Retrieve Evidence Bundle representation directly by event ID.
+    """
+    bundle = processor.load_event(event_id)
+    if not bundle:
+        raise HTTPException(status_code=404, detail=f"Evidence for '{event_id}' not found.")
+    return bundle.to_dict()
+
+
+@app.get("/api/telemetry/latest")
+def get_latest_telemetry():
+    """
+    Return the most recent GNSS telemetry fix from real recorded data or live sensor.
+    """
+    csv_path = "data/processed/locus_telemetry_clean.csv"
+    if not os.path.exists(csv_path):
+        return {
+            "mode": "NO LIVE DATA",
+            "is_live": False,
+            "message": "Telemetry dataset not found. Awaiting sensor stream."
+        }
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        valid = df[df["is_fix_valid"] == True]
+        if valid.empty:
+            return {"mode": "NO FIX", "is_live": False}
+        last_row = valid.iloc[-1].to_dict()
+        return {
+            "mode": "HISTORICAL / REPLAY MODE",
+            "provenance": "REAL GNSS TELEMETRY",
+            "is_live": False,
+            "telemetry": {
+                "timestamp_utc": str(last_row.get("timestamp_gnss") or last_row.get("timestamp_pc")),
+                "session_id": int(last_row.get("session_id", 0)),
+                "epoch_id": int(last_row.get("epoch_id", 0)),
+                "latitude": float(last_row.get("latitude", 0.0)),
+                "longitude": float(last_row.get("longitude", 0.0)),
+                "altitude_m": float(last_row.get("altitude_m", 0.0)),
+                "speed_kmh": float(last_row.get("speed_kmh", 0.0)),
+                "heading_deg": float(last_row.get("heading_deg", 0.0)),
+                "satellites_used": int(last_row.get("satellites_used", 0)),
+                "satellites_in_view": int(last_row.get("satellites_in_view_clean", 0)),
+                "hdop": float(last_row.get("hdop", 0.0)),
+                "vdop": float(last_row.get("vdop", 0.0)),
+                "fix_quality": int(last_row.get("fix_quality", 0))
+            }
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read telemetry: {str(e)}")
+
+
+@app.get("/api/telemetry/history")
+def get_telemetry_history(limit: int = Query(100, ge=10, le=1000), session_id: Optional[int] = None):
+    """
+    Return recent telemetry trajectory history for charts and mapping.
+    """
+    csv_path = "data/processed/locus_telemetry_clean.csv"
+    if not os.path.exists(csv_path):
+        return {"records": [], "count": 0, "mode": "NO LIVE DATA"}
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        valid = df[df["is_fix_valid"] == True]
+        if session_id is not None:
+            valid = valid[valid["session_id"] == session_id]
+        tail = valid.tail(limit)
+        records = []
+        for _, row in tail.iterrows():
+            records.append({
+                "timestamp": str(row.get("timestamp_gnss") or row.get("timestamp_pc")),
+                "epoch_id": int(row.get("epoch_id", 0)),
+                "session_id": int(row.get("session_id", 0)),
+                "latitude": float(row.get("latitude", 0.0)),
+                "longitude": float(row.get("longitude", 0.0)),
+                "altitude_m": float(row.get("altitude_m", 0.0)),
+                "speed_kmh": float(row.get("speed_kmh", 0.0)),
+                "heading_deg": float(row.get("heading_deg", 0.0)),
+                "satellites_used": int(row.get("satellites_used", 0)),
+                "hdop": float(row.get("hdop", 0.0)),
+                "vdop": float(row.get("vdop", 0.0))
+            })
+        return {
+            "mode": "HISTORICAL / REPLAY MODE",
+            "provenance": "REAL GNSS TELEMETRY",
+            "count": len(records),
+            "records": records
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read history: {str(e)}")
+
+
+@app.get("/api/features/latest")
+def get_latest_features():
+    """
+    Return the latest canonical 10-D security feature vector with calibrated threshold limits.
+    """
+    csv_path = "data/features/locus_security_features.csv"
+    if not os.path.exists(csv_path):
+        return {"features": {}, "status": "NO DATA"}
+    try:
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        last_row = df.iloc[-1].to_dict()
+        canonical_features = {
+            "disp_haversine": float(last_row.get("disp_haversine", 0.0)),
+            "vel_kinematic": float(last_row.get("vel_kinematic", 0.0)),
+            "acc_kinematic": float(last_row.get("acc_kinematic", 0.0)),
+            "jerk_kinematic": float(last_row.get("jerk_kinematic", 0.0)),
+            "bearing_rate": float(last_row.get("bearing_rate", 0.0)),
+            "HDOP": float(last_row.get("HDOP", 0.0)),
+            "VDOP": float(last_row.get("VDOP", 0.0)),
+            "fix_integrity": float(last_row.get("fix_integrity", 0.0)),
+            "sat_count_tot": int(last_row.get("sat_count_tot", 0)),
+            "sat_churn": float(last_row.get("sat_churn", 0.0)) if pd.notna(last_row.get("sat_churn")) else 0.0
+        }
+        # Threshold bounds defined in configs/model_training.yaml
+        bounds = {
+            "disp_haversine": {"unit": "m", "warn": 50.0, "crit": 100.0},
+            "vel_kinematic": {"unit": "m/s", "warn": 50.0, "crit": 85.0},
+            "acc_kinematic": {"unit": "m/s²", "warn": 4.0, "crit": 10.0},
+            "jerk_kinematic": {"unit": "m/s³", "warn": 15.0, "crit": 25.0},
+            "bearing_rate": {"unit": "deg/s", "warn": 90.0, "crit": 180.0},
+            "HDOP": {"unit": "unitless", "warn": 4.0, "crit": 8.0},
+            "VDOP": {"unit": "unitless", "warn": 5.0, "crit": 10.0},
+            "fix_integrity": {"unit": "score", "warn": 0.45, "crit": 0.20},
+            "sat_count_tot": {"unit": "count", "warn": 6, "crit": 4},
+            "sat_churn": {"unit": "ratio", "warn": 0.35, "crit": 0.60}
+        }
+        status_eval = {}
+        for feat, val in canonical_features.items():
+            b = bounds.get(feat, {})
+            status = "NORMAL"
+            if feat in ["fix_integrity", "sat_count_tot"]:
+                if val <= b["crit"]: status = "CRITICAL"
+                elif val <= b["warn"]: status = "WARNING"
+            else:
+                if abs(val) >= b["crit"]: status = "CRITICAL"
+                elif abs(val) >= b["warn"]: status = "WARNING"
+            status_eval[feat] = {
+                "value": val,
+                "unit": b.get("unit", ""),
+                "warning_threshold": b.get("warn"),
+                "critical_threshold": b.get("crit"),
+                "status": status
+            }
+        return {
+            "epoch_id": int(last_row.get("epoch_id", 0)),
+            "session_id": int(last_row.get("session_id", 0)),
+            "timestamp_utc": str(last_row.get("timestamp_utc", "")),
+            "provenance": "10-D SECURITY FEATURE ENGINEERING",
+            "features": canonical_features,
+            "status_evaluation": status_eval
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read features: {str(e)}")
+
+
+@app.get("/api/alerts")
+def get_alerts():
+    """
+    List all detected alerts and anomalous incidents from evidence bundles.
+    """
+    events = processor.list_available_events()
+    alerts = []
+    for ev in events:
+        bundle = processor.load_event(ev["event_id"])
+        if not bundle:
+            continue
+        # Evaluate severity
+        pr = bundle.physical_rules
+        ifo = bundle.isolation_forest
+        temp = bundle.temporal_model
+        
+        has_viol = pr.get("status") == "VIOLATED" or pr.get("triggered_count", 0) > 0
+        has_ifo = ifo.get("is_anomaly", False)
+        has_temp = temp.get("is_anomaly", False)
+
+        severity = "INFO"
+        if has_viol and pr.get("max_severity") == "CRITICAL":
+            severity = "CRITICAL"
+        elif has_viol or (has_ifo and has_temp):
+            severity = "HIGH"
+        elif has_ifo or has_temp:
+            severity = "WARNING"
+
+        affected = []
+        if has_viol:
+            for rule in pr.get("triggered_rules", []):
+                affected.extend(rule.get("features", []))
+        if not affected and has_ifo:
+            affected.append("spatial_outlier")
+        if temp.get("feature_attribution"):
+            affected.extend(list(temp.get("feature_attribution", {}).keys())[:2])
+
+        alerts.append({
+            "alert_id": f"ALT-{bundle.event_id}",
+            "event_id": bundle.event_id,
+            "timestamp": bundle.timestamp_utc or "N/A",
+            "severity": severity,
+            "event_type": "KINEMATIC_VIOLATION" if has_viol else ("SEQUENCE_ANOMALY" if has_temp else "SPATIAL_OUTLIER"),
+            "status": "UNRESOLVED" if severity in ["HIGH", "CRITICAL"] else "MONITORED",
+            "detection_source": "Physical Rules + Multi-Detector Quad",
+            "anomaly_score": float(ifo.get("anomaly_score", 0.0)),
+            "affected_features": list(set(affected)),
+            "location": bundle.location
+        })
+    return {
+        "count": len(alerts),
+        "alerts": alerts
+    }
+
+
+@app.get("/api/alerts/{alert_id}")
+def get_alert_detail(alert_id: str):
+    """
+    Retrieve specific alert by alert_id or event_id.
+    """
+    clean_id = alert_id.replace("ALT-", "")
+    bundle = processor.load_event(clean_id)
+    if not bundle:
+        raise HTTPException(status_code=404, detail=f"Alert '{alert_id}' not found.")
+    return bundle.to_dict()
+
+
+@app.get("/api/agents/status")
+def get_agents_status():
+    """
+    Return operational status, responsibilities, and latest active state for the 3 SOC agents.
+    """
+    return {
+        "agents": {
+            "agent_1_integrity": {
+                "name": "GNSS Integrity Agent",
+                "role": "Physical Invariants, Fix Quality, Satellite Churn & DOP Analysis",
+                "status": "ACTIVE_READY",
+                "input": "10-D Security Feature Vector + Physical Invariant Rules",
+                "output": "IntegrityAssessment (Kinematic Health, Geometry Health, Discard Flag)"
+            },
+            "agent_2_temporal_threat": {
+                "name": "Temporal / Threat Agent",
+                "role": "Sequence Persistence Tracking, LSTM Reconstruction Error, Multi-Detector Convergence",
+                "status": "ACTIVE_READY",
+                "input": "Rolling Window Telemetry (W=10) + Detector Anomaly Scores",
+                "output": "TemporalAssessment (Persistence Streak, Drift Classification, Convergence)"
+            },
+            "agent_3_master_soc": {
+                "name": "Master SOC Orchestrator",
+                "role": "Consensus Rating, Conflict Resolution, DEFCON Assignment, Mitigation Directives",
+                "status": "ACTIVE_READY",
+                "input": "Agent 1 Findings + Agent 2 Findings + Regulatory RAG Grounding Context",
+                "output": "MasterSOCVerdict (DEFCON 1-5, Consensus Ratio, Mandatory Next Actions)"
+            }
+        }
+    }
+
+
+class RAGQueryRequest(BaseModel):
+    query: str = Field(..., json_schema_extra={"example": "What are the RTCA DO-229E limits on HDOP?"})
+    top_k: int = Field(3, ge=1, le=10)
+
+
+@app.post("/api/rag/query")
+def query_rag_knowledge_base(req: RAGQueryRequest):
+    """
+    Directly query the regulatory RAG knowledge base for technical definitions, standards, and citations.
+    """
+    try:
+        res = processor.rag_engine.query(text=req.query, top_k=req.top_k)
+        return {
+            "query": req.query,
+            "is_grounded": res.get("is_grounded", False),
+            "citations_count": len(res.get("citations", [])),
+            "citations": res.get("citations", []),
+            "regulatory_standards": res.get("regulatory_standards", []),
+            "provenance": "RAG REGULATORY KNOWLEDGE BASE",
+            "insufficient_context": res.get("insufficient_context", False),
+            "message": res.get("insufficient_context_message")
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"RAG query failed: {str(e)}")
+
+
 @app.post("/api/query")
 def process_natural_language_query(req: SecurityQueryRequest):
     """

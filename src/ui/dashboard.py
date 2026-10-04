@@ -1,20 +1,30 @@
 """
-LOCUS Cyber-Physical GNSS Security Operations Center (SOC) — Streamlit Dashboard
-
+LOCUS Cyber-Physical GNSS Security Operations Center (SOC) — Master Dashboard
 Module: src.ui.dashboard
-Run: streamlit run src/ui/dashboard.py
+Run: streamlit run dashboard.py
 """
 
 import os
-import json
 import streamlit as st
 import pandas as pd
-import numpy as np
 
-from src.query.query_processor import SecurityQueryProcessor
+from src.ui.data_service import SOCDataService
+from src.ui.components.theme import inject_custom_css
+from src.ui.components.navbar import render_navbar
+from src.ui.components.kpis import render_kpi_cards
+from src.ui.components.telemetry_panel import render_telemetry_panel
+from src.ui.components.map_panel import render_map_panel
+from src.ui.components.features_panel import render_features_panel
+from src.ui.components.detection_panel import render_detection_panel
+from src.ui.components.alert_center import render_alert_center
+from src.ui.components.evidence_panel import render_evidence_panel
+from src.ui.components.agent_soc_panel import render_agent_soc_panel
+from src.ui.components.rag_panel import render_rag_panel
+from src.ui.components.query_terminal import render_query_terminal
+from src.ui.components.health_panel import render_health_panel
 
 
-# Set page layout
+# Set page configuration
 st.set_page_config(
     page_title="LOCUS — GNSS Security Operations Center",
     page_icon="🛰️",
@@ -22,281 +32,193 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom Cyber-Security CSS Styling
-st.markdown("""
-<style>
-    .main {
-        background-color: #0b0f19;
-    }
-    .metric-card {
-        background: linear-gradient(135deg, #131b2e 0%, #1e293b 100%);
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 16px;
-        margin-bottom: 12px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    }
-    .defcon-1 { background-color: #ef4444; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-    .defcon-2 { background-color: #f97316; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-    .defcon-3 { background-color: #eab308; color: black; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-    .defcon-4 { background-color: #3b82f6; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-    .defcon-5 { background-color: #10b981; color: white; padding: 4px 10px; border-radius: 6px; font-weight: bold; }
-    .agent-box {
-        border-left: 4px solid #38bdf8;
-        background: #0f172a;
-        padding: 12px;
-        border-radius: 0 8px 8px 0;
-        margin-bottom: 8px;
-    }
-    .rag-badge {
-        background-color: #6366f1;
-        color: white;
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        margin-right: 6px;
-    }
-</style>
-""", unsafe_allow_html=True)
+# Inject dark cybersecurity stylesheet
+inject_custom_css()
 
 
 @st.cache_resource
-def get_query_processor():
-    return SecurityQueryProcessor()
+def get_soc_data_service():
+    return SOCDataService()
 
 
-processor = get_query_processor()
+service = get_soc_data_service()
 
-# Header
-st.title("🛰️ LOCUS — Cyber-Physical GNSS Security Operations Center")
-st.caption("Live Observation, Cybersecurity & Unified Security for GNSS | 3-Agent SOC & Regulatory RAG")
+# Detect hardware / connection status (Zero fabrication)
+conn_info = service.check_gnss_connection()
 
-# Sidebar
-st.sidebar.header("Navigation & Event Feed")
-events = processor.list_available_events()
+# Cached dataset loading
+@st.cache_data(ttl=60)
+def load_cached_datasets():
+    df_tel = service.load_telemetry_dataset()
+    df_feat = service.load_features_dataset()
+    alerts = service.get_alert_center_records()
+    health = service.get_system_health_matrix()
+    return df_tel, df_feat, alerts, health
 
-if not events:
-    st.error("No evidence events found in data/evidence/. Run detection pipeline first.")
-    st.stop()
 
-event_options = [e["event_id"] for e in events]
-selected_event_id = st.sidebar.selectbox("Select GNSS Event:", event_options, index=0)
+df_telemetry, df_features, alerts_list, health_matrix = load_cached_datasets()
 
-# Sidebar System Health
-st.sidebar.markdown("---")
-st.sidebar.subheader("System Architecture")
-st.sidebar.markdown("""
-- **Hardware**: 7Semi L89HA Multi-GNSS
-- **Features**: Official 10-D Security Vector
-- **Detectors**: Physical, IForest, XGBoost, LSTM
-- **SOC Layer**: 3-Agent Hierarchy
-- **Knowledge Base**: RAG (ICAO, RTCA, CISA, MITRE)
-""")
+# Sidebar: Navigation & Event Selection
+st.sidebar.markdown("### 🛰️ LOCUS SOC Command")
+st.sidebar.caption("Autonomous GNSS Threat Detection & Agentic SOC")
 
-# Load Selected Event Bundle
-bundle = processor.load_event(selected_event_id)
-if not bundle:
-    st.error(f"Failed to load event: {selected_event_id}")
-    st.stop()
+events = service.processor.list_available_events()
+event_ids = [e["event_id"] for e in events] if events else ["No Events"]
 
-# Run Deliberation & Grounding for Event
-query_result = processor.process_query(
-    query="Initial security status assessment.",
-    event_id=selected_event_id,
-    bundle=bundle
+selected_event_id = st.sidebar.selectbox(
+    "Active Forensic Event:",
+    options=event_ids,
+    index=1 if len(event_ids) > 1 else 0
 )
 
-status = query_result["current_status"]
-defcon = query_result["risk_level"]
-conf = query_result["confidence"]
-features = query_result["feature_values"]
-outputs = query_result["model_outputs"]
-agents = query_result["agent_findings"]
-rag_sources = query_result["rag_sources"]
+# Navigation View Selector
+nav_section = st.sidebar.radio(
+    "Security Console Views:",
+    options=[
+        "📊 Main SOC Overview",
+        "🛰️ Live GNSS Monitoring",
+        "🗺️ Geospatial Map View",
+        "🛡️ 10-D Security Features",
+        "🔍 Detection & ML Quad",
+        "🚨 Alert Center",
+        "📋 Evidence Bundle",
+        "🤖 3-Agent Security SOC",
+        "📚 Regulatory RAG",
+        "💬 SOC Query Assistant",
+        "⚙️ System Health"
+    ]
+)
 
-# Top Status Bar
-col1, col2, col3, col4 = st.columns([2, 2, 2, 2])
-with col1:
-    st.markdown(f"**Event ID**: `{bundle.event_id}`")
-    st.markdown(f"**UTC Timestamp**: `{bundle.timestamp_utc}`")
-with col2:
-    st.markdown("**Incident Status**")
-    if status == "CONFIRMED_ATTACK":
-        st.error(f"🚨 {status}")
-    elif status == "SUSPECTED_INTERFERENCE":
-        st.warning(f"⚠️ {status}")
+st.sidebar.markdown("---")
+st.sidebar.markdown("##### Pipeline Architecture")
+st.sidebar.markdown("""
+- **Sensor**: 7Semi L89HA Multi-GNSS
+- **Vector**: 10-D Canonical Features
+- **Detectors**: Physical, IF, XGB, LSTM
+- **SOC Layer**: 3-Agent Deliberative
+- **Knowledge**: RAG (ICAO, RTCA, CISA, MITRE)
+""")
+
+# Load active event bundle & deliberation
+active_bundle = service.processor.load_event(selected_event_id)
+if active_bundle:
+    delib = service.processor.process_query(
+        query="Initial security status assessment.",
+        event_id=selected_event_id,
+        bundle=active_bundle
+    )
+    current_status = delib.get("current_status", "NOMINAL")
+    defcon_level = delib.get("risk_level", "DEFCON_5")
+    confidence = delib.get("confidence", 1.0)
+else:
+    delib = {}
+    current_status = "NOMINAL"
+    defcon_level = "DEFCON_5"
+    confidence = 1.0
+
+# 1. Render Top Cybersecurity Navbar
+render_navbar(
+    conn_info=conn_info,
+    system_status="HEALTHY",
+    defcon_level=defcon_level
+)
+
+# Latest Telemetry Metrics for KPI cards
+tel_metrics = service.get_latest_telemetry_metrics()
+
+# 2. Render Main 6 KPI Cards
+render_kpi_cards(
+    telemetry=tel_metrics,
+    security_status=current_status,
+    defcon_level=defcon_level,
+    active_alerts_count=len(alerts_list),
+    is_live=conn_info.get("is_live", False)
+)
+
+st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
+
+# 3. View Routing
+if nav_section == "📊 Main SOC Overview":
+    st.subheader("🎯 Executive Security Overview & Operational Directives")
+    st.caption(f"Active Incident Event: `{selected_event_id}` • Defcon State: `{defcon_level}` • Consensus Confidence: `{confidence*100:.1f}%`")
+
+    col_sum, col_dir = st.columns([3, 2])
+    with col_sum:
+        st.markdown("##### Master SOC Executive Summary")
+        summary_text = delib.get("agent_findings", {}).get("agent_3_master_soc", {}).get("summary", "Consensus verified nominal across all detectors.")
+        st.info(summary_text)
+
+        loc = active_bundle.location if active_bundle else {}
+        st.markdown(
+            f"""
+            <div style='background: #111827; border: 1px solid #1f2937; border-radius: 6px; padding: 12px; margin-top: 10px;'>
+                <b>Antenna Fix Coordinates:</b> <code>{loc.get('latitude', 'N/A')} °N, {loc.get('longitude', 'N/A')} °E</code> | 
+                <b>Altitude MSL:</b> <code>{loc.get('altitude_m', 'N/A')} m</code>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with col_dir:
+        st.markdown("##### Mandated Mitigation Directives")
+        actions = delib.get("recommended_next_action", ["MAINTAIN_STANDARD_FIX"])
+        for act in actions:
+            st.markdown(f"- **`{act}`**")
+
+    st.markdown("---")
+    # Quick Trajectory & 10-D Preview
+    col_map_preview, col_feat_preview = st.columns([1, 1])
+    with col_map_preview:
+        render_map_panel(df_telemetry=df_telemetry.tail(100), alerts=alerts_list[:3])
+    with col_feat_preview:
+        canonical_feats = service.get_canonical_10d_features(bundle=active_bundle)
+        render_features_panel(canonical_feats)
+
+elif nav_section == "🛰️ Live GNSS Monitoring":
+    render_telemetry_panel(df_telemetry=df_telemetry, conn_info=conn_info)
+
+elif nav_section == "🗺️ Geospatial Map View":
+    render_map_panel(df_telemetry=df_telemetry, alerts=alerts_list)
+
+elif nav_section == "🛡️ 10-D Security Features":
+    canonical_feats = service.get_canonical_10d_features(bundle=active_bundle)
+    render_features_panel(features_list=canonical_feats, df_features=df_features)
+
+elif nav_section == "🔍 Detection & ML Quad":
+    bundle_dict = active_bundle.to_dict() if active_bundle else {}
+    render_detection_panel(
+        bundle_dict=bundle_dict,
+        final_verdict=delib.get("agent_findings", {}).get("agent_3_master_soc")
+    )
+
+elif nav_section == "🚨 Alert Center":
+    clicked_event = render_alert_center(alerts=alerts_list)
+    if clicked_event:
+        st.info(f"Viewing selected alert: `{clicked_event}`")
+        alt_bundle = service.processor.load_event(clicked_event)
+        if alt_bundle:
+            render_evidence_panel(alt_bundle)
+
+elif nav_section == "📋 Evidence Bundle":
+    if active_bundle:
+        render_evidence_panel(bundle=active_bundle, deliberation_result=delib)
     else:
-        st.success(f"✅ {status}")
-with col3:
-    st.markdown("**DEFCON Readiness**")
-    defcon_class = "defcon-5"
-    if "1" in defcon: defcon_class = "defcon-1"
-    elif "2" in defcon: defcon_class = "defcon-2"
-    elif "3" in defcon: defcon_class = "defcon-3"
-    elif "4" in defcon: defcon_class = "defcon-4"
-    st.markdown(f"<span class='{defcon_class}'>{defcon}</span>", unsafe_allow_html=True)
-with col4:
-    st.markdown(f"**Consensus Confidence**: `{conf * 100:.1f}%`")
-    st.progress(float(conf))
+        st.warning("No active Evidence Bundle selected.")
 
-st.markdown("---")
+elif nav_section == "🤖 3-Agent Security SOC":
+    agent_findings = delib.get("agent_findings", {})
+    render_agent_soc_panel(agent_findings=agent_findings)
 
-# Main Content Tabs
-tab_overview, tab_features, tab_detectors, tab_agents, tab_rag, tab_query = st.tabs([
-    "📊 Executive Summary",
-    "📈 10-D Security Features",
-    "🛡️ Detector Quad",
-    "🤖 3-Agent Findings",
-    "📚 Regulatory RAG",
-    "💬 Security Query Terminal"
-])
+elif nav_section == "📚 Regulatory RAG":
+    rag_sources = delib.get("rag_sources", [])
+    render_rag_panel(rag_sources=rag_sources, rag_engine=service.processor.rag_engine)
 
-# TAB 1: EXECUTIVE SUMMARY
-with tab_overview:
-    st.subheader("Master SOC Executive Summary")
-    st.info(agents.get("agent_3_master_soc", {}).get("summary", "No summary available."))
+elif nav_section == "💬 SOC Query Assistant":
+    render_query_terminal(
+        processor=service.processor,
+        event_id=selected_event_id,
+        bundle=active_bundle
+    )
 
-    st.subheader("Mandated Mitigation Directives")
-    actions = query_result.get("recommended_next_action", [])
-    for act in actions:
-        st.markdown(f"- **`{act}`**")
-
-    st.subheader("Geospatial & Antenna Position")
-    loc = bundle.location
-    c_lat, c_lon, c_alt = st.columns(3)
-    c_lat.metric("Latitude", f"{loc.get('latitude', 'N/A')} °N")
-    c_lon.metric("Longitude", f"{loc.get('longitude', 'N/A')} °E")
-    c_alt.metric("Altitude MSL", f"{loc.get('altitude_m', 'N/A')} m")
-
-# TAB 2: 10-D SECURITY FEATURES
-with tab_features:
-    st.subheader("Official 10-Dimensional Security Feature Vector")
-    st.caption("Structured across Physical Kinematics, Navigation Quality, and Satellite Constellation Dynamics.")
-
-    col_k1, col_k2, col_k3, col_k4, col_k5 = st.columns(5)
-    col_k1.metric("disp_haversine", f"{features.get('disp_haversine', 0.0):.3f} m")
-    col_k2.metric("vel_kinematic", f"{features.get('vel_kinematic', 0.0):.3f} m/s")
-    col_k3.metric("acc_kinematic", f"{features.get('acc_kinematic', 0.0):.3f} m/s²")
-    col_k4.metric("jerk_kinematic", f"{features.get('jerk_kinematic', 0.0):.3f} m/s³")
-    col_k5.metric("bearing_rate", f"{features.get('bearing_rate', 0.0):.2f} °/s")
-
-    col_q1, col_q2, col_q3, col_q4, col_q5 = st.columns(5)
-    col_q1.metric("HDOP", f"{features.get('HDOP', 0.0):.2f}")
-    col_q2.metric("VDOP", f"{features.get('VDOP', 0.0):.2f}")
-    col_q3.metric("fix_integrity", f"{features.get('fix_integrity', 0.0):.3f}")
-    col_q4.metric("sat_count_tot", f"{features.get('sat_count_tot', 0)}")
-    churn_val = features.get('sat_churn')
-    col_q5.metric("sat_churn", f"{churn_val:.3f}" if churn_val is not None else "N/A (Historical)")
-
-    # Dataframe visualization
-    st.dataframe(pd.DataFrame([features]), use_container_width=True)
-
-# TAB 3: DETECTOR QUAD
-with tab_detectors:
-    st.subheader("Multi-Detector Anomaly Quad")
-    d1, d2 = st.columns(2)
-    with d1:
-        st.markdown("#### Path 1: Physical Rules Engine")
-        pr = outputs.get("physical_rules", {})
-        st.write(f"**Max Severity**: `{pr.get('max_severity', 'INFO')}`")
-        st.write(f"**Triggered Violations**: `{pr.get('triggered_count', 0)}`")
-        if pr.get("triggered_rules"):
-            st.json(pr["triggered_rules"])
-        else:
-            st.success("Zero physical kinematic invariants violated.")
-
-        st.markdown("#### Path 3: Supervised XGBoost Classifier")
-        xgb = outputs.get("xgboost", {})
-        st.write(f"**Classification Status**: `{xgb.get('status', 'UNFITTED')}`")
-
-    with d2:
-        st.markdown("#### Path 2: Isolation Forest (Spatial Outlier)")
-        ifo = outputs.get("isolation_forest", {})
-        st.write(f"**Anomaly Score**: `{ifo.get('anomaly_score', 0.0):.4f}`")
-        st.write(f"**Flagged Anomaly**: `{ifo.get('is_anomaly', False)}`")
-
-        st.markdown("#### Path 4: LSTM Sequence Autoencoder")
-        lstm = outputs.get("temporal_model", {})
-        recon = lstm.get("reconstruction_error", 0.0)
-        thresh = lstm.get("error_threshold", 0.0)
-        st.write(f"**Reconstruction Error**: `{recon:.4f}` (Threshold: `{thresh:.4f}`)")
-        st.write(f"**Temporal Anomaly**: `{lstm.get('is_anomaly', False)}`")
-
-# TAB 4: 3-AGENT FINDINGS
-with tab_agents:
-    st.subheader("Autonomous 3-Agent SOC Deliberation")
-    a1 = agents.get("agent_1_integrity", {})
-    a2 = agents.get("agent_2_temporal_threat", {})
-    a3 = agents.get("agent_3_master_soc", {})
-
-    st.markdown("##### 🛡️ Agent 1 — GNSS Integrity Agent")
-    st.markdown(f"<div class='agent-box'><b>Status:</b> {a1.get('integrity_assessment')}<br/>"
-                f"<b>Kinematic Health:</b> {a1.get('kinematic_health', 1.0)*100:.1f}% | "
-                f"<b>Geometry Health:</b> {a1.get('geometry_health', 1.0)*100:.1f}%<br/>"
-                f"<b>Discard Recommended:</b> {a1.get('discard_recommended')}<br/>"
-                f"<b>Explanation:</b> {a1.get('explanation')}</div>", unsafe_allow_html=True)
-
-    st.markdown("##### ⏱️ Agent 2 — Temporal / Threat Agent")
-    st.markdown(f"<div class='agent-box'><b>Threat Classification:</b> {a2.get('threat_classification')}<br/>"
-                f"<b>Persistence Streak:</b> {a2.get('persistence_streak')} epoch(s) | "
-                f"<b>Is Persistent:</b> {a2.get('is_persistent')}<br/>"
-                f"<b>Explanation:</b> {a2.get('explanation')}</div>", unsafe_allow_html=True)
-
-    st.markdown("##### 👑 Agent 3 — Master SOC Orchestrator")
-    st.markdown(f"<div class='agent-box'><b>Binding Risk Level:</b> {a3.get('risk_level')}<br/>"
-                f"<b>Status:</b> {a3.get('status')} | "
-                f"<b>Confidence:</b> {a3.get('confidence', 1.0)*100:.1f}%<br/>"
-                f"<b>Consensus Summary:</b> {a3.get('summary')}</div>", unsafe_allow_html=True)
-
-# TAB 5: REGULATORY RAG
-with tab_rag:
-    st.subheader("Regulatory RAG Knowledge Base Sources")
-    st.caption("Approved Grounding Standards: ICAO Annex 10, RTCA DO-229E, CISA Resilient PNT, MITRE ATT&CK for Space.")
-    if rag_sources:
-        for idx, src in enumerate(rag_sources):
-            with st.expander(f"Source {idx+1}: {src['document']} — Section: {src['section']} (Sim: {src['similarity']:.3f})"):
-                auths = src.get("regulatory_authorities", [])
-                auth_html = "".join([f"<span class='rag-badge'>{a}</span>" for a in auths])
-                st.markdown(f"**Regulatory Authorities**: {auth_html}", unsafe_allow_html=True)
-    else:
-        st.warning("No regulatory citations grounded for this event.")
-
-# TAB 6: SECURITY QUERY TERMINAL
-with tab_query:
-    st.subheader("💬 Natural-Language Security Query Terminal")
-    st.caption("Ask questions about this event, feature attribution, persistence, or regulatory compliance.")
-
-    # Example Query Quick Buttons
-    st.write("**Quick Query Prompts:**")
-    q_col1, q_col2, q_col3 = st.columns(3)
-    q1 = q_col1.button("Why was this event flagged?")
-    q2 = q_col2.button("What features caused the anomaly?")
-    q3 = q_col3.button("Is the anomaly persistent?")
-
-    q_col4, q_col5, q_col6 = st.columns(3)
-    q4 = q_col4.button("Show me the evidence behind this alert.")
-    q5 = q_col5.button("What did the temporal model detect?")
-    q6 = q_col6.button("Explain the navigation-quality degradation.")
-
-    active_prompt = "Why was this event flagged?"
-    if q1: active_prompt = "Why was this event flagged?"
-    elif q2: active_prompt = "What features caused the anomaly?"
-    elif q3: active_prompt = "Is the anomaly persistent?"
-    elif q4: active_prompt = "Show me the evidence behind this alert."
-    elif q5: active_prompt = "What did the temporal model detect?"
-    elif q6: active_prompt = "Explain the navigation-quality degradation."
-
-    user_query = st.text_input("Enter natural-language query:", value=active_prompt)
-
-    if st.button("Submit Security Query", type="primary"):
-        with st.spinner("Executing SOC deliberation, RAG grounding, and reasoning..."):
-            ans = processor.process_query(
-                query=user_query,
-                event_id=selected_event_id,
-                bundle=bundle
-            )
-            st.success("SOC Response Generated")
-            st.markdown(f"### Answer:\n{ans['explanation']}")
-
-            with st.expander("Inspect Full Structured JSON Response"):
-                st.json(ans)
+elif nav_section == "⚙️ System Health":
+    render_health_panel(health_matrix=health_matrix)

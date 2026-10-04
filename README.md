@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status](https://img.shields.io/badge/Phases%201--6-COMPLETE-brightgreen.svg)]()
-[![Phase 6 Status](https://img.shields.io/badge/Phase%206%20SOC-OPERATIONAL-brightgreen.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-63%20Passing%20(100%25)-success.svg)]()
+[![Status](https://img.shields.io/badge/Phases%201--9-COMPLETE-brightgreen.svg)]()
+[![Phase 9 Status](https://img.shields.io/badge/Phase%209%20SOC%20GUI-OPERATIONAL-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-98%20Passing%20(100%25)-success.svg)]()
 
 ---
 
@@ -93,3 +93,36 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Install dependencies
 pip install -r requirements.txt
 ```
+
+### Running the SOC Dashboard & REST API
+
+```bash
+# 1. Start the decoupled FastAPI REST Backend (Port 8000)
+python -m uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+
+# 2. Launch the Streamlit Cyber SOC Dashboard
+python -m streamlit run dashboard.py
+
+# 3. Run the automated test suite (98 tests passing)
+python -m pytest tests/ -v
+```
+
+Interactive REST API documentation is available at `http://localhost:8000/docs`.
+
+---
+
+## 5. SOC Dashboard Capabilities
+
+The LOCUS SOC Dashboard (`dashboard.py` / `src/ui/dashboard.py`) features 11 dedicated cybersecurity consoles:
+1. **Executive Overview**: High-level incident banner, DEFCON rating, consensus confidence, and mandated operator directives.
+2. **Primary KPI Cards**: GNSS Status, Security Status, Satellites, HDOP, Current Speed, Active Alerts.
+3. **Live GNSS Monitoring**: Speed, HDOP, Satellite count, Heading, and Altitude time-series trend graphs.
+4. **Geospatial Map View**: Trajectory track with point-level classification (`NORMAL`, `WARNING`, `ANOMALY`).
+5. **10-D Security Feature Monitor**: Canonical feature vector evaluation against calibrated Newtonian bounds.
+6. **Detection & ML Quad**: Physical Rules Engine, Isolation Forest, XGBoost, and LSTM Autoencoder.
+7. **Security Alert Center**: Filterable incident queue with severity badges and drill-down selection.
+8. **Evidence Bundle Viewer**: Forensic evidence inspection with temporal timeline and raw provenance.
+9. **3-Agent Security SOC**: Autonomous deliberative flow across Integrity, Temporal Threat, and Master SOC agents.
+10. **Regulatory RAG Panel**: Technical standards grounding against ICAO, RTCA DO-229E, CISA, and MITRE.
+11. **Natural-Language Query Terminal**: Interactive forensic assistant resolving operator inquiries with zero fabrication.
+
