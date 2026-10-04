@@ -1,0 +1,149 @@
+# LOCUS Phase 5.5 — Reproducible Model Training Configuration
+# Pipeline: LOCUS Multi-Detector Quad (Physical Rules, Isolation Forest, XGBoost, Temporal LSTM)
+# Version: 5.5.0
+# Date: 2026-10-04
+
+project:
+  name: "LOCUS GNSS Security Platform"
+  phase: "5.5"
+  task: "Model Fine-Tuning and Optimization"
+  random_seed: 42
+
+features:
+  schema_version: "locus-sec-v2.0-10d"
+  feature_list:
+    - disp_haversine
+    - vel_kinematic
+    - acc_kinematic
+    - jerk_kinematic
+    - bearing_rate
+    - HDOP
+    - VDOP
+    - fix_integrity
+    - sat_count_tot
+    - sat_churn
+
+data_partitioning:
+  strategy: "chronological_session_aware_buffer_isolated"
+  dataset_path: "data/features/locus_security_features.csv"
+  splits:
+    train:
+      sessions: [4, 5, 9, 10]
+      epochs: 4749
+      percentage: 50.62
+    validation:
+      sessions: [11, 15]
+      session_15_cutoff: 2270
+      epochs: 2301
+      percentage: 24.53
+    safety_buffer:
+      session_id: 15
+      buffer_epochs: 30
+      epochs: 30
+      percentage: 0.32
+    test:
+      sessions: [15]
+      session_15_start: 2300
+      epochs: 2302
+      percentage: 24.54
+  preprocessing:
+    imputation:
+      strategy: "median"
+      fill_value: 0.0
+    scaling:
+      method: "RobustScaler"
+      centering: "median"
+      unit_variance: false
+      fit_scope: "train_only"
+
+models:
+  physical_rules:
+    model_version: "prules-v1.1"
+    calibrated_thresholds:
+      acc_warning_mps2: 4.0
+      acc_critical_mps2: 10.0
+      jerk_warning_mps3: 15.0
+      jerk_critical_mps3: 25.0
+      vel_warning_mps: 50.0
+      vel_critical_mps: 85.0
+      disp_warning_m: 50.0
+      disp_critical_m: 100.0
+      bearing_rate_max_deg_s: 90.0
+      bearing_rate_min_speed_mps: 2.0
+      hdop_warning: 4.0
+      hdop_critical: 8.0
+      vdop_warning: 5.0
+      vdop_critical: 10.0
+      fix_integrity_min_warning: 0.45
+      fix_integrity_min_critical: 0.20
+      sat_count_min_warning: 6
+      sat_count_min_critical: 4
+      sat_churn_warning: 0.35
+      sat_churn_critical: 0.60
+
+  isolation_forest:
+    model_version: "iforest-tuned-v1.1"
+    search_space:
+      n_estimators: [100, 150, 200, 250, 300, 400]
+      max_samples: [128, 256, 512, "auto"]
+      max_features: [0.8, 0.9, 1.0]
+      contamination: [0.008, 0.01, 0.015, 0.02]
+    selected_parameters:
+      n_estimators: 150
+      max_samples: 256
+      max_features: 1.0
+      contamination: 0.01
+      random_state: 42
+      n_jobs: 1
+    artifacts:
+      production_model: "models/production/isolation_forest/isolation_forest.joblib"
+      tuned_model: "models/isolation_forest/isolation_forest_tuned.joblib"
+
+  xgboost:
+    model_version: "xgb-ready-v1.1"
+    status: "UNFITTED_PENDING_LABELLED_SCENARIOS"
+    provenance_safeguard: "NO_FAKE_LABELS"
+    search_space:
+      n_estimators: [100, 200, 300]
+      max_depth: [3, 4, 5, 6]
+      learning_rate: [0.01, 0.03, 0.05, 0.1]
+      subsample: [0.7, 0.8, 0.9]
+      colsample_bytree: [0.7, 0.8, 0.9]
+      min_child_weight: [1, 3, 5]
+      gamma: [0.0, 0.1, 0.2]
+      reg_alpha: [0.001, 0.1, 1.0]
+      reg_lambda: [0.001, 0.1, 1.0]
+    artifacts:
+      production_dir: "models/production/xgboost/"
+
+  temporal_lstm:
+    model_version: "lstm-temporal-tuned-v1.1"
+    sequence_length: 10
+    search_space:
+      window_size: [8, 10, 12]
+      hidden_dim: [32, 48, 64]
+      num_layers: [1, 2]
+      dropout: [0.0, 0.1, 0.2]
+      lr: [0.001, 0.002]
+      batch_size: [64, 128]
+    selected_parameters:
+      window_size: 10
+      hidden_dim: 64
+      num_layers: 1
+      dropout: 0.0
+      learning_rate: 0.001
+      batch_size: 64
+      optimizer: "Adam"
+      weight_decay: 1.0e-5
+      early_stopping_patience: 4
+      max_epochs: 20
+      calibrated_error_threshold: 1.4434
+    artifacts:
+      production_weights: "models/production/temporal/temporal_model.pt"
+      production_metadata: "models/production/temporal/temporal_metadata.joblib"
+
+evidence_bundle:
+  schema_version: "locus-evidence-v2.0"
+  model_version: "locus-production-v5.5"
+  model_training_date: "2026-10-04"
+  output_dir: "data/evidence/"

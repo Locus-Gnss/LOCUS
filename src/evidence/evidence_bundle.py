@@ -60,6 +60,9 @@ class EvidenceBundle:
     temporal_model: Dict[str, Any]
     data_quality: Dict[str, Any]
     model_versions: Dict[str, str]
+    model_version: str = "locus-production-v5.5"
+    model_training_date: str = "2026-10-04"
+    feature_schema_version: str = "locus-sec-v2.0-10d"
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -76,7 +79,8 @@ class EvidenceBundle:
 
 class EvidenceFusionEngine:
     """
-    Orchestrates the 4 detection paths and constructs structured Evidence Bundles.
+    Orchestrates the 4 detection paths and constructs structured Evidence Bundles
+    using final tuned production models.
     """
 
     def __init__(
@@ -84,12 +88,47 @@ class EvidenceFusionEngine:
         rules_engine: Optional[PhysicalRulesEngine] = None,
         iforest_detector: Optional[IsolationForestDetector] = None,
         xgb_detector: Optional[XGBoostDetector] = None,
-        temporal_detector: Optional[TemporalDetector] = None
+        temporal_detector: Optional[TemporalDetector] = None,
+        pipeline_tier: str = "PRODUCTION"
     ):
         self.rules_engine = rules_engine or PhysicalRulesEngine()
-        self.iforest_detector = iforest_detector
-        self.xgb_detector = xgb_detector or XGBoostDetector()
-        self.temporal_detector = temporal_detector
+        self.pipeline_tier = pipeline_tier
+
+        # 1. Load Isolation Forest (Production -> Tuned -> Baseline)
+        if iforest_detector is not None:
+            self.iforest_detector = iforest_detector
+        else:
+            candidates = [
+                os.path.join("models", "production", "isolation_forest", "isolation_forest.joblib"),
+                os.path.join("models", "isolation_forest", "isolation_forest_tuned.joblib"),
+                os.path.join("models", "isolation_forest.joblib")
+            ]
+            self.iforest_detector = None
+            for p in candidates:
+                if os.path.exists(p):
+                    self.iforest_detector = IsolationForestDetector.load(p)
+                    break
+
+        # 2. XGBoost Detector
+        self.xgb_detector = xgb_detector or XGBoostDetector(model_version="xgb-ready-v1.1")
+
+        # 3. Load Temporal Model (Production -> Tuned -> Baseline)
+        if temporal_detector is not None:
+            self.temporal_detector = temporal_detector
+        else:
+            temp_candidates = [
+                (os.path.join("models", "production", "temporal", "temporal_model.pt"),
+                 os.path.join("models", "production", "temporal", "temporal_metadata.joblib")),
+                (os.path.join("models", "temporal", "temporal_model_tuned.pt"),
+                 os.path.join("models", "temporal", "temporal_metadata_tuned.joblib")),
+                (os.path.join("models", "temporal_model.pt"),
+                 os.path.join("models", "temporal_metadata.joblib"))
+            ]
+            self.temporal_detector = None
+            for w, m in temp_candidates:
+                if os.path.exists(w) and os.path.exists(m):
+                    self.temporal_detector = TemporalDetector.load(w, m)
+                    break
 
     def build_bundle(
         self,
@@ -175,12 +214,13 @@ class EvidenceFusionEngine:
             "data_quality_flag": str(row["data_quality_flag"]) if "data_quality_flag" in row and pd.notna(row["data_quality_flag"]) else "VALID"
         }
 
-        # 9. Model Versions
+        # 9. Model Versions & Metadata
         model_versions = {
-            "physical_rules_version": "prules-v1.0",
+            "physical_rules_version": "prules-v1.1",
             "isolation_forest_version": if_out.get("model_version", "unknown"),
             "xgboost_version": xgb_out.get("model_version", "unknown"),
-            "temporal_model_version": temp_out.get("model_version", "unknown")
+            "temporal_model_version": temp_out.get("model_version", "unknown"),
+            "pipeline_tier": self.pipeline_tier
         }
 
         return EvidenceBundle(
@@ -196,7 +236,10 @@ class EvidenceFusionEngine:
             xgboost=xgb_out,
             temporal_model=temp_out,
             data_quality=dq_context,
-            model_versions=model_versions
+            model_versions=model_versions,
+            model_version=f"locus-{self.pipeline_tier.lower()}-v5.5",
+            model_training_date="2026-10-04",
+            feature_schema_version="locus-sec-v2.0-10d"
         )
 
     def process_features_csv(

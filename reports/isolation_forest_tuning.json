@@ -1,0 +1,250 @@
+{
+  "timestamp": "2026-10-04T12:52:15Z",
+  "tuning_strategy": "Grid evaluation on strictly partitioned Validation set",
+  "total_candidates_evaluated": 8,
+  "comparison": {
+    "baseline": {
+      "parameters": {
+        "n_estimators": 200,
+        "max_samples": 256,
+        "max_features": 1.0,
+        "contamination": 0.02
+      },
+      "val_nominal_fpr": 0.0004,
+      "raw_offset": -0.6226,
+      "train_time_sec": 0.3624
+    },
+    "tuned": {
+      "parameters": {
+        "n_estimators": 150,
+        "max_samples": 256,
+        "max_features": 1.0,
+        "contamination": 0.01
+      },
+      "val_nominal_fpr": 0.0,
+      "raw_offset": -0.6715,
+      "score_margin": 0.257,
+      "train_time_sec": 0.3153,
+      "selection_score": 0.1927,
+      "improvement": "Optimized score stability and calibrated nominal FPR to reduce SOC alert fatigue while maximizing separation margin."
+    }
+  },
+  "best_candidate": {
+    "candidate_id": "cand_1",
+    "parameters": {
+      "n_estimators": 150,
+      "max_samples": 256,
+      "max_features": 1.0,
+      "contamination": 0.01
+    },
+    "train_time_sec": 0.3153,
+    "inf_time_ms_per_epoch": 0.01827,
+    "raw_offset": -0.6715,
+    "val_anomalies_count": 0,
+    "val_nominal_fpr": 0.0,
+    "val_raw_score_stats": {
+      "mean": -0.4218,
+      "std": 0.0314,
+      "min": -0.6278,
+      "median": -0.4145,
+      "p95": -0.3851,
+      "max": -0.3624
+    },
+    "score_margin": 0.257,
+    "selection_score": 0.1927
+  },
+  "all_candidates": [
+    {
+      "candidate_id": "cand_1",
+      "parameters": {
+        "n_estimators": 150,
+        "max_samples": 256,
+        "max_features": 1.0,
+        "contamination": 0.01
+      },
+      "train_time_sec": 0.3153,
+      "inf_time_ms_per_epoch": 0.01827,
+      "raw_offset": -0.6715,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4218,
+        "std": 0.0314,
+        "min": -0.6278,
+        "median": -0.4145,
+        "p95": -0.3851,
+        "max": -0.3624
+      },
+      "score_margin": 0.257,
+      "selection_score": 0.1927
+    },
+    {
+      "candidate_id": "cand_8",
+      "parameters": {
+        "n_estimators": 300,
+        "max_samples": 512,
+        "max_features": 1.0,
+        "contamination": 0.008
+      },
+      "train_time_sec": 0.6037,
+      "inf_time_ms_per_epoch": 0.04286,
+      "raw_offset": -0.6654,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4262,
+        "std": 0.0307,
+        "min": -0.6205,
+        "median": -0.4169,
+        "p95": -0.3906,
+        "max": -0.3717
+      },
+      "score_margin": 0.2485,
+      "selection_score": 0.1838
+    },
+    {
+      "candidate_id": "cand_3",
+      "parameters": {
+        "n_estimators": 250,
+        "max_samples": 256,
+        "max_features": 0.9,
+        "contamination": 0.01
+      },
+      "train_time_sec": 0.4353,
+      "inf_time_ms_per_epoch": 0.03541,
+      "raw_offset": -0.672,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4327,
+        "std": 0.0326,
+        "min": -0.6173,
+        "median": -0.4257,
+        "p95": -0.3937,
+        "max": -0.3772
+      },
+      "score_margin": 0.2463,
+      "selection_score": 0.1826
+    },
+    {
+      "candidate_id": "cand_4",
+      "parameters": {
+        "n_estimators": 300,
+        "max_samples": 512,
+        "max_features": 1.0,
+        "contamination": 0.01
+      },
+      "train_time_sec": 0.6173,
+      "inf_time_ms_per_epoch": 0.03954,
+      "raw_offset": -0.6571,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4262,
+        "std": 0.0307,
+        "min": -0.6205,
+        "median": -0.4169,
+        "p95": -0.3906,
+        "max": -0.3717
+      },
+      "score_margin": 0.2402,
+      "selection_score": 0.1756
+    },
+    {
+      "candidate_id": "cand_6",
+      "parameters": {
+        "n_estimators": 350,
+        "max_samples": 512,
+        "max_features": 0.9,
+        "contamination": 0.01
+      },
+      "train_time_sec": 0.6458,
+      "inf_time_ms_per_epoch": 0.04957,
+      "raw_offset": -0.651,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4274,
+        "std": 0.0272,
+        "min": -0.6107,
+        "median": -0.4222,
+        "p95": -0.3948,
+        "max": -0.3774
+      },
+      "score_margin": 0.2288,
+      "selection_score": 0.1624
+    },
+    {
+      "candidate_id": "cand_7",
+      "parameters": {
+        "n_estimators": 400,
+        "max_samples": "auto",
+        "max_features": 1.0,
+        "contamination": 0.015
+      },
+      "train_time_sec": 0.6653,
+      "inf_time_ms_per_epoch": 0.05246,
+      "raw_offset": -0.6424,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.4262,
+        "std": 0.0316,
+        "min": -0.6216,
+        "median": -0.4184,
+        "p95": -0.3894,
+        "max": -0.3721
+      },
+      "score_margin": 0.224,
+      "selection_score": 0.1597
+    },
+    {
+      "candidate_id": "cand_5",
+      "parameters": {
+        "n_estimators": 300,
+        "max_samples": 256,
+        "max_features": 0.9,
+        "contamination": 0.015
+      },
+      "train_time_sec": 0.5061,
+      "inf_time_ms_per_epoch": 0.04238,
+      "raw_offset": -0.6408,
+      "val_anomalies_count": 0,
+      "val_nominal_fpr": 0.0,
+      "val_raw_score_stats": {
+        "mean": -0.434,
+        "std": 0.0315,
+        "min": -0.6153,
+        "median": -0.4272,
+        "p95": -0.3976,
+        "max": -0.3803
+      },
+      "score_margin": 0.2137,
+      "selection_score": 0.1494
+    },
+    {
+      "candidate_id": "cand_2",
+      "parameters": {
+        "n_estimators": 200,
+        "max_samples": 256,
+        "max_features": 1.0,
+        "contamination": 0.02
+      },
+      "train_time_sec": 0.3624,
+      "inf_time_ms_per_epoch": 0.02424,
+      "raw_offset": -0.6226,
+      "val_anomalies_count": 1,
+      "val_nominal_fpr": 0.0004,
+      "val_raw_score_stats": {
+        "mean": -0.4257,
+        "std": 0.0322,
+        "min": -0.6234,
+        "median": -0.4171,
+        "p95": -0.3883,
+        "max": -0.3691
+      },
+      "score_margin": 0.2055,
+      "selection_score": 0.1459
+    }
+  ]
+}

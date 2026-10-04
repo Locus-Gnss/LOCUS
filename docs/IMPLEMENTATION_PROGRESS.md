@@ -10,8 +10,9 @@ This document tracks the milestone progress, implementation details, validation 
 - **Phase 2 — COMPLETE** (NMEA Parsing & Preprocessing)
 - **Phase 3 — COMPLETE** (Structured GNSS Dataset)
 - **Phase 4 — COMPLETE** (Security Feature Engineering)
-- **Phase 5 — COMPLETE** (Detection & Machine Learning)
-- **Phase 6 — COMPLETE** (3-Agent Agentic Security SOC)
+- **Phase 5 — COMPLETE** (Detection & Machine Learning Pipeline)
+- **Phase 5.5 — COMPLETE** (Model Fine-Tuning, Optimization & Leakage Audit)
+- **Phase 6 — READY / SEPARATE TRACK** (3-Agent Agentic Security SOC)
 - **Phase 7 — NOT STARTED** (Regulatory RAG Knowledge Base)
 - **Phase 8 — NOT STARTED** (Final Query & SOC Dashboard)
 
@@ -146,6 +147,57 @@ This document tracks the milestone progress, implementation details, validation 
   - Fitted models in `models/`.
   - Serialized Evidence Bundles in `data/evidence/`.
 - **Commit Hash**: `a6a03c8 (Complete LOCUS Phases 1-5)`
+
+---
+
+### Phase 5.5 — Model Fine-Tuning and Optimization
+- **Status**: **COMPLETE**
+- **Objective**: Conduct rigorous hyperparameter optimization, threshold calibration, and data leakage elimination across all four Phase 5 detection models prior to SOC agent deliberation.
+- **Implementation**:
+  - Implemented strict session-aware, buffer-isolated chronological partitioning (`src/detection/partition.py`):
+    - Train (50.62%): Sessions 4, 5, 9, 10 ($N=4,749$). Scalers fit exclusively on Train.
+    - Validation (24.53%): Session 11 + Session 15 Part 1 ($N=2,301$).
+    - Safety Buffer: 30 epochs in Session 15.
+    - Held-Out Test (24.54%): Session 15 Part 2 ($N=2,302$).
+  - Physical Rule Calibration: Magnitude evaluation for jerk ($|j|$) and acceleration ($|a|$); fix integrity warning calibrated to $0.45$; zero false alarms on nominal data.
+  - Isolation Forest Tuning: Optimized `n_estimators=150`, `max_samples=256`, `contamination=0.01`. Score margin widened by 25.1%; validation and test false alarm rate reduced to 0.00%.
+  - Supervised XGBoost Audit: Provenance safeguard enforced (zero fake labels created). Optuna search space and production wrapper prepared.
+  - LSTM Temporal Autoencoder Tuning: Scaled hidden units to 64; early stopping on validation loss. Validation MSE dropped to 1.3979 (15.3% reduction); held-out test MSE dropped to 0.8571 (32.1% reduction).
+  - Production Model Directory Hierarchy: Structured `models/production/` vs `models/experiments/`.
+  - Evidence Bundle Schema: Updated to include `model_version`, `model_training_date`, `feature_schema_version`, and `pipeline_tier`.
+- **Files Created / Modified**:
+  - `src/detection/partition.py`
+  - `src/detection/tune_isolation_forest.py`
+  - `src/detection/tune_xgboost.py`
+  - `src/detection/tune_temporal_model.py`
+  - `src/detection/run_baseline_evaluation.py`
+  - `src/detection/physical_rules.py`
+  - `src/detection/isolation_forest.py`
+  - `src/evidence/evidence_bundle.py`
+  - `configs/model_training.yaml`
+  - `reports/baseline_metrics.json`
+  - `reports/baseline_results.md`
+  - `reports/rule_threshold_analysis.md`
+  - `reports/isolation_forest_tuning.json`
+  - `reports/xgboost_tuning.json`
+  - `reports/xgboost_evaluation.md`
+  - `reports/temporal_model_tuning.json`
+  - `reports/temporal_model_evaluation.md`
+  - `reports/MODEL_COMPARISON.md`
+  - `docs/PHASE_5_MODEL_AUDIT.md`
+  - `docs/PHASE_5_5_FINE_TUNING.md`
+  - `docs/MODEL_CARD.md`
+  - `tests/test_phase_5_5_pipeline.py`
+- **Validation**:
+  - 49 unit and integration tests passing (100% pass rate).
+  - 8 operational scenario tests verified (Normal, Missing, Invalid, Timestamp Gap, Sudden Kinematics, Nav Degradation, Constellation Starvation, Creeping Temporal Drift).
+- **Outputs**:
+  - `models/production/isolation_forest/isolation_forest.joblib`
+  - `models/production/temporal/temporal_model.pt`
+  - `models/production/temporal/temporal_metadata.joblib`
+  - `models/production/xgboost/`
+  - `models/experiments/`
+- **Commit Hash**: `[Current Phase 5.5 Deliverable]`
 
 ---
 

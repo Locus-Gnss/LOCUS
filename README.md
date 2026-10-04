@@ -2,9 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Status](https://img.shields.io/badge/Phases%201--5-COMPLETE-brightgreen.svg)]()
-[![Next Phase](https://img.shields.io/badge/Phase%206-NEXT-orange.svg)]()
-[![Tests](https://img.shields.io/badge/Tests-100%25%20Passing-success.svg)]()
+[![Status](https://img.shields.io/badge/Phases%201--5.5-COMPLETE-brightgreen.svg)]()
+[![Phase 6 Status](https://img.shields.io/badge/Phase%206-READY-blue.svg)]()
+[![Tests](https://img.shields.io/badge/Tests-49%20Passing%20(100%25)-success.svg)]()
 
 ---
 
@@ -28,50 +28,42 @@ Modern civilian infrastructure—ranging from autonomous transport, maritime shi
 1. **Decouple Physical Observation from Feature Analysis**: Transform raw serial NMEA stream buffers into standardized, immutable epoch observations.
 2. **Physically Grounded 10-D Security Feature Representation**: Formulate a strict 10-dimensional cybersecurity vector capturing Newtonian kinematics, receiver dilution of precision, and constellation dynamics.
 3. **Multi-Detector Consensus Defense**: Combine deterministic physical rules, unsupervised spatial isolation forests, supervised classification infrastructure, and deep LSTM autoencoders.
-4. **Structured Evidence Generation**: Assemble detector findings into tamper-evident, standardized **Evidence Bundles** ready for autonomous AI SOC investigation and incident response.
+4. **Model Optimization & Leakage Elimination (Phase 5.5)**: Systematically tune hyperparameters using leakage-free chronological partitioning and calibrate physical invariant thresholds.
+5. **Structured Evidence Generation**: Assemble detector findings into tamper-evident, standardized **Evidence Bundles** ready for autonomous AI SOC investigation and incident response.
 
 ---
 
 ## 3. Master System Architecture
 
 ```
-7Semi L89HA
+7Semi L89HA Receiver
      ↓
-  Arduino
+Arduino Microcontroller
      ↓
- Raw NMEA
+Raw NMEA Stream
      ↓
-NMEA Parsing
+NMEA Parsing & Temporal Preprocessing
      ↓
-Preprocessing
+Structured GNSS Dataset (locus_structured_gnss.csv)
      ↓
-Structured GNSS Dataset
+10-D Security Feature Vector (locus_security_features.csv)
      ↓
-10-D Security Feature Vector
+Phase 5.5 Multi-Detector Quad (Production Models):
+  ├── Physical Rules Engine (prules-v1.1)
+  ├── Isolation Forest (iforest-tuned-v1.1, n=150, contam=0.01)
+  ├── XGBoost Supervised Infrastructure (xgb-ready-v1.1)
+  └── LSTM Temporal Autoencoder (lstm-temporal-tuned-v1.1, H=64)
      ↓
-Physical Rules
-       +
-Isolation Forest
-       +
-    XGBoost
-       +
-   LSTM/TCN
+Evidence Fusion Engine (evidence_*.json)
      ↓
-Evidence Bundle
-     ↓
-3-Agent Security SOC  (Phase 6 — COMPLETE)
-     ↓
-      RAG             (Phase 7 — NEXT)
-     ↓
-  Final Query         (Phase 8 — Future)
-. Technology Stack
+READY FOR PHASE 6 (Agentic Security SOC)
+```
 
+### Technology Stack
 - **Languages**: Python 3.10+
 - **Machine Learning & Deep Learning**: PyTorch (`torch`), Scikit-Learn (`scikit-learn`), XGBoost (`xgboost`)
 - **Numerical & Data Processing**: NumPy, Pandas, SciPy, Joblib
-- **Visualization**: Matplotlib, Seaborn
-- **GNSS & Serial Communication**: PySerial, PyNMEA2
-- **Testing**: Python `unittest` suite (31 automated unit and integration tests)
+- **Testing**: Python `pytest` & `unittest` suite (49 automated unit and integration tests passing 100%)
 
 ---
 

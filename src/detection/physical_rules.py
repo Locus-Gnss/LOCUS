@@ -50,7 +50,7 @@ class PhysicalRulesConfig:
     # Jerk thresholds (m/s³)
     # Rationale: Passenger comfort limit is ~2 m/s³. Vehicle mechanical suspension and engine
     # limits cap jerk below 10-15 m/s³. Higher values indicate discontinuous spoofing takeovers.
-    jerk_warning_mps3: float = 12.0
+    jerk_warning_mps3: float = 15.0
     jerk_critical_mps3: float = 25.0
 
     # Kinematic Velocity limits (m/s)
@@ -88,8 +88,8 @@ class PhysicalRulesConfig:
 
     # Fix Integrity Score [0.0 - 1.0]
     # Rationale: Combined health score incorporating fix quality, sat count, and DOP.
-    # Below 0.5 indicates compromised fix; below 0.2 indicates loss of valid navigation.
-    fix_integrity_min_warning: float = 0.50
+    # Below 0.45 indicates degraded fix; below 0.2 indicates loss of valid navigation.
+    fix_integrity_min_warning: float = 0.45
     fix_integrity_min_critical: float = 0.20
 
     # 3. SATELLITE BEHAVIOR & CONSTELLATION HEALTH
@@ -152,7 +152,8 @@ class PhysicalRulesEngine:
         # Rule 1: Kinematic Acceleration Limit (PR_ACC_001 / PR_ACC_002)
         # -------------------------------------------------------------------------
         if acc is not None:
-            if acc > self.config.acc_critical_mps2:
+            acc_mag = abs(acc)
+            if acc_mag > self.config.acc_critical_mps2:
                 results.append(RuleResult(
                     rule_id="PR_ACC_002",
                     feature="acc_kinematic",
@@ -160,9 +161,9 @@ class PhysicalRulesEngine:
                     threshold=self.config.acc_critical_mps2,
                     triggered=True,
                     severity="CRITICAL",
-                    explanation=f"Observed acceleration ({acc:.2f} m/s²) exceeds critical vehicle dynamics threshold ({self.config.acc_critical_mps2} m/s²), indicating non-physical coordinate jump."
+                    explanation=f"Observed acceleration magnitude ({acc_mag:.2f} m/s²) exceeds critical vehicle dynamics threshold ({self.config.acc_critical_mps2} m/s²), indicating non-physical coordinate jump."
                 ))
-            elif acc > self.config.acc_warning_mps2:
+            elif acc_mag > self.config.acc_warning_mps2:
                 results.append(RuleResult(
                     rule_id="PR_ACC_001",
                     feature="acc_kinematic",
@@ -170,7 +171,7 @@ class PhysicalRulesEngine:
                     threshold=self.config.acc_warning_mps2,
                     triggered=True,
                     severity="WARNING",
-                    explanation=f"Observed acceleration ({acc:.2f} m/s²) exceeds normal driving envelope ({self.config.acc_warning_mps2} m/s²)."
+                    explanation=f"Observed acceleration magnitude ({acc_mag:.2f} m/s²) exceeds normal driving envelope ({self.config.acc_warning_mps2} m/s²)."
                 ))
             else:
                 results.append(RuleResult(
@@ -187,7 +188,8 @@ class PhysicalRulesEngine:
         # Rule 2: Kinematic Jerk Limit (PR_JERK_001 / PR_JERK_002)
         # -------------------------------------------------------------------------
         if jerk is not None:
-            if jerk > self.config.jerk_critical_mps3:
+            jerk_mag = abs(jerk)
+            if jerk_mag > self.config.jerk_critical_mps3:
                 results.append(RuleResult(
                     rule_id="PR_JERK_002",
                     feature="jerk_kinematic",
@@ -195,9 +197,9 @@ class PhysicalRulesEngine:
                     threshold=self.config.jerk_critical_mps3,
                     triggered=True,
                     severity="CRITICAL",
-                    explanation=f"Observed jerk ({jerk:.2f} m/s³) exceeds mechanical actuator limits ({self.config.jerk_critical_mps3} m/s³), indicating trajectory discontinuity or spoofing step."
+                    explanation=f"Observed jerk magnitude ({jerk_mag:.2f} m/s³) exceeds mechanical actuator limits ({self.config.jerk_critical_mps3} m/s³), indicating trajectory discontinuity or spoofing step."
                 ))
-            elif jerk > self.config.jerk_warning_mps3:
+            elif jerk_mag > self.config.jerk_warning_mps3:
                 results.append(RuleResult(
                     rule_id="PR_JERK_001",
                     feature="jerk_kinematic",
@@ -205,7 +207,7 @@ class PhysicalRulesEngine:
                     threshold=self.config.jerk_warning_mps3,
                     triggered=True,
                     severity="WARNING",
-                    explanation=f"Observed jerk ({jerk:.2f} m/s³) exceeds normal threshold ({self.config.jerk_warning_mps3} m/s³)."
+                    explanation=f"Observed jerk magnitude ({jerk_mag:.2f} m/s³) exceeds normal threshold ({self.config.jerk_warning_mps3} m/s³)."
                 ))
             else:
                 results.append(RuleResult(

@@ -84,6 +84,7 @@ class IsolationForestDetector:
                 data[col] = np.nan
 
         X = data[self.features].to_numpy(dtype=np.float64)
+        X[~np.isfinite(X)] = np.nan
 
         # In historical data where PRNs were unlogged, sat_churn is entirely NaN.
         # Impute entirely NaN columns with 0.0 baseline to guarantee strict 10-D preservation.
@@ -145,11 +146,14 @@ class IsolationForestDetector:
         for feat in self.features:
             v = epoch.get(feat, np.nan) if isinstance(epoch, dict) else (epoch.get(feat, np.nan) if hasattr(epoch, "get") else epoch[feat])
             try:
-                vals.append(float(v) if pd.notna(v) else 0.0)
+                fv = float(v) if pd.notna(v) else np.nan
+                vals.append(fv if np.isfinite(fv) else np.nan)
             except (ValueError, TypeError):
-                vals.append(0.0)
+                vals.append(np.nan)
 
         X = np.array([vals], dtype=np.float64)
+        # Any remaining non-finites are marked as NaN for imputer
+        X[~np.isfinite(X)] = np.nan
         X_imp = self.imputer.transform(X)
         X_scaled = self.scaler.transform(X_imp)
 
