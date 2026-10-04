@@ -70,6 +70,8 @@ class SecurityQueryProcessor:
                     continue
         return events
 
+    list_events = list_available_events
+
     def load_event(self, event_id: str) -> Optional[EvidenceBundle]:
         """
         Retrieve EvidenceBundle by event_id or file name.

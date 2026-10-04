@@ -81,6 +81,7 @@ def list_events():
     events = processor.list_available_events()
     return {
         "total": len(events),
+        "count": len(events),
         "events": events
     }
 
