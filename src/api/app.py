@@ -15,7 +15,6 @@ from typing import Dict, List, Optional, Any
 from fastapi import FastAPI, HTTPException, Query, Body
 from pydantic import BaseModel, Field
 
-from src.query.query_processor import SecurityQueryProcessor
 from src.evidence.evidence_bundle import EvidenceBundle
 
 
@@ -43,8 +42,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize query processor
-processor = SecurityQueryProcessor()
+# Lazy singleton for query processor to prevent heavy imports during startup
+_processor = None
+
+def get_processor():
+    global _processor
+    if _processor is None:
+        from src.query.query_processor import SecurityQueryProcessor
+        _processor = SecurityQueryProcessor()
+    return _processor
+
+class _LazyProcessorProxy:
+    def __getattr__(self, name):
+        return getattr(get_processor(), name)
+
+processor = _LazyProcessorProxy()
 
 
 class SecurityQueryRequest(BaseModel):
@@ -126,22 +138,36 @@ def get_evidence_bundle(event_id: str):
     return bundle.to_dict()
 
 
+_cached_telemetry_valid = None
+
+def _get_telemetry_valid_df():
+    global _cached_telemetry_valid
+    if _cached_telemetry_valid is None:
+        csv_path = "data/processed/locus_telemetry_clean.csv"
+        if not os.path.exists(csv_path):
+            return None
+        import pandas as pd
+        df = pd.read_csv(csv_path)
+        if "is_fix_valid" in df.columns:
+            _cached_telemetry_valid = df[df["is_fix_valid"] == True].copy()
+        else:
+            _cached_telemetry_valid = df
+    return _cached_telemetry_valid
+
+
 @app.get("/api/telemetry/latest")
 def get_latest_telemetry():
     """
     Return the most recent GNSS telemetry fix from real recorded data or live sensor.
     """
-    csv_path = "data/processed/locus_telemetry_clean.csv"
-    if not os.path.exists(csv_path):
+    valid = _get_telemetry_valid_df()
+    if valid is None:
         return {
             "mode": "NO LIVE DATA",
             "is_live": False,
             "message": "Telemetry dataset not found. Awaiting sensor stream."
         }
     try:
-        import pandas as pd
-        df = pd.read_csv(csv_path)
-        valid = df[df["is_fix_valid"] == True]
         if valid.empty:
             return {"mode": "NO FIX", "is_live": False}
         last_row = valid.iloc[-1].to_dict()
@@ -174,16 +200,14 @@ def get_telemetry_history(limit: int = Query(100, ge=10, le=1000), session_id: O
     """
     Return recent telemetry trajectory history for charts and mapping.
     """
-    csv_path = "data/processed/locus_telemetry_clean.csv"
-    if not os.path.exists(csv_path):
+    valid = _get_telemetry_valid_df()
+    if valid is None:
         return {"records": [], "count": 0, "mode": "NO LIVE DATA"}
     try:
-        import pandas as pd
-        df = pd.read_csv(csv_path)
-        valid = df[df["is_fix_valid"] == True]
+        filtered = valid
         if session_id is not None:
-            valid = valid[valid["session_id"] == session_id]
-        tail = valid.tail(limit)
+            filtered = filtered[filtered["session_id"] == session_id]
+        tail = filtered.tail(limit)
         records = []
         for _, row in tail.iterrows():
             records.append({
@@ -209,77 +233,94 @@ def get_telemetry_history(limit: int = Query(100, ge=10, le=1000), session_id: O
         raise HTTPException(status_code=500, detail=f"Failed to read history: {str(e)}")
 
 
+_cached_features_payload = None
+
+def _get_latest_features_payload():
+    global _cached_features_payload
+    if _cached_features_payload is not None:
+        return _cached_features_payload
+
+    csv_path = "data/features/locus_security_features.csv"
+    if not os.path.exists(csv_path):
+        return {"features": {}, "status": "NO DATA"}
+
+    import pandas as pd
+    df = pd.read_csv(csv_path)
+    last_row = df.iloc[-1].to_dict()
+    canonical_features = {
+        "disp_haversine": float(last_row.get("disp_haversine", 0.0)),
+        "vel_kinematic": float(last_row.get("vel_kinematic", 0.0)),
+        "acc_kinematic": float(last_row.get("acc_kinematic", 0.0)),
+        "jerk_kinematic": float(last_row.get("jerk_kinematic", 0.0)),
+        "bearing_rate": float(last_row.get("bearing_rate", 0.0)),
+        "HDOP": float(last_row.get("HDOP", 0.0)),
+        "VDOP": float(last_row.get("VDOP", 0.0)),
+        "fix_integrity": float(last_row.get("fix_integrity", 0.0)),
+        "sat_count_tot": int(last_row.get("sat_count_tot", 0)),
+        "sat_churn": float(last_row.get("sat_churn", 0.0)) if pd.notna(last_row.get("sat_churn")) else 0.0
+    }
+    bounds = {
+        "disp_haversine": {"unit": "m", "warn": 50.0, "crit": 100.0},
+        "vel_kinematic": {"unit": "m/s", "warn": 50.0, "crit": 85.0},
+        "acc_kinematic": {"unit": "m/s²", "warn": 4.0, "crit": 10.0},
+        "jerk_kinematic": {"unit": "m/s³", "warn": 15.0, "crit": 25.0},
+        "bearing_rate": {"unit": "deg/s", "warn": 90.0, "crit": 180.0},
+        "HDOP": {"unit": "unitless", "warn": 4.0, "crit": 8.0},
+        "VDOP": {"unit": "unitless", "warn": 5.0, "crit": 10.0},
+        "fix_integrity": {"unit": "score", "warn": 0.45, "crit": 0.20},
+        "sat_count_tot": {"unit": "count", "warn": 6, "crit": 4},
+        "sat_churn": {"unit": "ratio", "warn": 0.35, "crit": 0.60}
+    }
+    status_eval = {}
+    for feat, val in canonical_features.items():
+        b = bounds.get(feat, {})
+        status = "NORMAL"
+        if feat in ["fix_integrity", "sat_count_tot"]:
+            if val <= b["crit"]: status = "CRITICAL"
+            elif val <= b["warn"]: status = "WARNING"
+        else:
+            if abs(val) >= b["crit"]: status = "CRITICAL"
+            elif abs(val) >= b["warn"]: status = "WARNING"
+        status_eval[feat] = {
+            "value": val,
+            "unit": b.get("unit", ""),
+            "warning_threshold": b.get("warn"),
+            "critical_threshold": b.get("crit"),
+            "status": status
+        }
+    _cached_features_payload = {
+        "epoch_id": int(last_row.get("epoch_id", 0)),
+        "session_id": int(last_row.get("session_id", 0)),
+        "timestamp_utc": str(last_row.get("timestamp_utc", "")),
+        "provenance": "10-D SECURITY FEATURE ENGINEERING",
+        "features": canonical_features,
+        "status_evaluation": status_eval
+    }
+    return _cached_features_payload
+
+
 @app.get("/api/features/latest")
 def get_latest_features():
     """
     Return the latest canonical 10-D security feature vector with calibrated threshold limits.
     """
-    csv_path = "data/features/locus_security_features.csv"
-    if not os.path.exists(csv_path):
-        return {"features": {}, "status": "NO DATA"}
     try:
-        import pandas as pd
-        df = pd.read_csv(csv_path)
-        last_row = df.iloc[-1].to_dict()
-        canonical_features = {
-            "disp_haversine": float(last_row.get("disp_haversine", 0.0)),
-            "vel_kinematic": float(last_row.get("vel_kinematic", 0.0)),
-            "acc_kinematic": float(last_row.get("acc_kinematic", 0.0)),
-            "jerk_kinematic": float(last_row.get("jerk_kinematic", 0.0)),
-            "bearing_rate": float(last_row.get("bearing_rate", 0.0)),
-            "HDOP": float(last_row.get("HDOP", 0.0)),
-            "VDOP": float(last_row.get("VDOP", 0.0)),
-            "fix_integrity": float(last_row.get("fix_integrity", 0.0)),
-            "sat_count_tot": int(last_row.get("sat_count_tot", 0)),
-            "sat_churn": float(last_row.get("sat_churn", 0.0)) if pd.notna(last_row.get("sat_churn")) else 0.0
-        }
-        # Threshold bounds defined in configs/model_training.yaml
-        bounds = {
-            "disp_haversine": {"unit": "m", "warn": 50.0, "crit": 100.0},
-            "vel_kinematic": {"unit": "m/s", "warn": 50.0, "crit": 85.0},
-            "acc_kinematic": {"unit": "m/s²", "warn": 4.0, "crit": 10.0},
-            "jerk_kinematic": {"unit": "m/s³", "warn": 15.0, "crit": 25.0},
-            "bearing_rate": {"unit": "deg/s", "warn": 90.0, "crit": 180.0},
-            "HDOP": {"unit": "unitless", "warn": 4.0, "crit": 8.0},
-            "VDOP": {"unit": "unitless", "warn": 5.0, "crit": 10.0},
-            "fix_integrity": {"unit": "score", "warn": 0.45, "crit": 0.20},
-            "sat_count_tot": {"unit": "count", "warn": 6, "crit": 4},
-            "sat_churn": {"unit": "ratio", "warn": 0.35, "crit": 0.60}
-        }
-        status_eval = {}
-        for feat, val in canonical_features.items():
-            b = bounds.get(feat, {})
-            status = "NORMAL"
-            if feat in ["fix_integrity", "sat_count_tot"]:
-                if val <= b["crit"]: status = "CRITICAL"
-                elif val <= b["warn"]: status = "WARNING"
-            else:
-                if abs(val) >= b["crit"]: status = "CRITICAL"
-                elif abs(val) >= b["warn"]: status = "WARNING"
-            status_eval[feat] = {
-                "value": val,
-                "unit": b.get("unit", ""),
-                "warning_threshold": b.get("warn"),
-                "critical_threshold": b.get("crit"),
-                "status": status
-            }
-        return {
-            "epoch_id": int(last_row.get("epoch_id", 0)),
-            "session_id": int(last_row.get("session_id", 0)),
-            "timestamp_utc": str(last_row.get("timestamp_utc", "")),
-            "provenance": "10-D SECURITY FEATURE ENGINEERING",
-            "features": canonical_features,
-            "status_evaluation": status_eval
-        }
+        return _get_latest_features_payload()
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to read features: {str(e)}")
 
 
+_cached_alerts_payload = None
+
 @app.get("/api/alerts")
 def get_alerts():
     """
-    List all detected alerts and anomalous incidents from evidence bundles.
+    List all detected alerts and anomalous incidents from evidence bundles (cached in memory).
     """
+    global _cached_alerts_payload
+    if _cached_alerts_payload is not None:
+        return _cached_alerts_payload
+
     events = processor.list_available_events()
     alerts = []
     for ev in events:
@@ -324,10 +365,11 @@ def get_alerts():
             "affected_features": list(set(affected)),
             "location": bundle.location
         })
-    return {
+    _cached_alerts_payload = {
         "count": len(alerts),
         "alerts": alerts
     }
+    return _cached_alerts_payload
 
 
 @app.get("/api/alerts/{alert_id}")

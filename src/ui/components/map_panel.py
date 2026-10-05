@@ -14,7 +14,7 @@ def render_map_panel(df_telemetry: pd.DataFrame, alerts: list = None):
     Render geospatial trajectory map with classified points:
     NORMAL (Green), WARNING (Amber), ANOMALY (Red).
     """
-    st.subheader("🗺️ Geospatial Trajectory & Anomaly Mapping")
+    st.subheader("Geospatial Trajectory & Anomaly Mapping")
     st.caption("OpenStreetMap Tile Layer • Real Coordinate Track • Kinematic Anomaly Overlays")
 
     if df_telemetry.empty:

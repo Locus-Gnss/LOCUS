@@ -11,7 +11,7 @@ def render_agent_soc_panel(agent_findings: dict):
     Render autonomous 3-agent deliberative hierarchy and visual consensus workflow:
     Telemetry -> Agent 1 -> Agent 2 -> Master SOC Orchestrator -> Final Verdict.
     """
-    st.subheader("🤖 Autonomous 3-Agent Security Intelligence Hierarchy")
+    st.subheader("Autonomous 3-Agent Security Intelligence Hierarchy")
     st.caption("Collaborative Deliberation • Physics-First Priority • Multi-Epoch Sequence Tracking • Binding DEFCON Rating")
 
     # Visual Workflow Diagram
@@ -21,13 +21,13 @@ def render_agent_soc_panel(agent_findings: dict):
             <div style='font-size: 13px; font-weight: 700; color: #94a3b8; margin-bottom: 8px;'>DELIBERATIVE WORKFLOW:</div>
             <div style='display: flex; justify-content: space-between; align-items: center; font-family: monospace; font-size: 13px; flex-wrap: wrap; gap: 8px;'>
                 <span class='provenance-tag'>1. Telemetry & Evidence</span>
-                <span>➔</span>
+                <span>-></span>
                 <span class='provenance-tag' style='background-color: #064e3b; color: #34d399;'>2. Agent 1: Integrity</span>
-                <span>➔</span>
+                <span>-></span>
                 <span class='provenance-tag' style='background-color: #78350f; color: #fbbf24;'>3. Agent 2: Temporal Threat</span>
-                <span>➔</span>
+                <span>-></span>
                 <span class='provenance-tag' style='background-color: #1e1b4b; color: #a5b4fc;'>4. Regulatory RAG</span>
-                <span>➔</span>
+                <span>-></span>
                 <span class='provenance-tag' style='background-color: #7f1d1d; color: #f87171;'>5. Master SOC Orchestrator</span>
             </div>
         </div>
@@ -40,7 +40,7 @@ def render_agent_soc_panel(agent_findings: dict):
     a3 = agent_findings.get("agent_3_master_soc", {})
 
     # Agent 1: GNSS Integrity Agent
-    st.markdown("#### 🛡️ AGENT 1 — GNSS Integrity Agent")
+    st.markdown("#### AGENT 1 — GNSS Integrity Agent")
     with st.container():
         a1_status = a1.get("integrity_assessment", "NOMINAL")
         badge1 = "badge-normal" if "NOMINAL" in a1_status else "badge-critical"
@@ -66,7 +66,7 @@ def render_agent_soc_panel(agent_findings: dict):
         )
 
     # Agent 2: Temporal / Threat Agent
-    st.markdown("#### ⏱️ AGENT 2 — Temporal / Threat Agent")
+    st.markdown("#### AGENT 2 — Temporal / Threat Agent")
     with st.container():
         a2_status = a2.get("threat_classification", a2.get("temporal_assessment", "BENIGN"))
         badge2 = "badge-normal" if "BENIGN" in a2_status else "badge-warning"
@@ -92,7 +92,7 @@ def render_agent_soc_panel(agent_findings: dict):
         )
 
     # Agent 3: Master SOC Orchestrator
-    st.markdown("#### 👑 AGENT 3 — Master SOC Orchestrator")
+    st.markdown("#### AGENT 3 — Master SOC Orchestrator")
     with st.container():
         a3_status = a3.get("status", "NOMINAL")
         a3_risk = a3.get("risk_level", "DEFCON_5")

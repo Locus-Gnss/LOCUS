@@ -6,13 +6,14 @@ Module: src.ui.components.query_terminal
 import streamlit as st
 
 
-def render_query_terminal(processor, event_id: str, bundle=None):
+def render_query_terminal(processor=None, event_id: str = "evt_4_220", bundle=None, service=None):
     """
     Render natural-language security query terminal supporting all standard operator prompts.
     Displays end-to-end deliberative flow:
     USER QUERY -> LOCUS ANALYSIS -> EVIDENCE -> AGENT FINDINGS -> RAG CONTEXT -> FINAL ANSWER.
     """
-    st.subheader("💬 Autonomous SOC Security Assistant")
+    service_target = service or processor
+    st.subheader("Autonomous SOC Security Assistant")
     st.caption("Natural-Language Threat Intelligence • Physics-Grounded Explanations • Full Audit Traceability")
 
     st.markdown("##### Quick Operator Prompts:")
@@ -38,11 +39,29 @@ def render_query_terminal(processor, event_id: str, bundle=None):
 
     if st.button("Submit Inquiry to SOC Agent Hierarchy", type="primary"):
         with st.spinner("Executing end-to-end SOC deliberation, RAG grounding, and response synthesis..."):
-            ans = processor.process_query(
-                query=user_query,
-                event_id=event_id,
-                bundle=bundle
-            )
+            if hasattr(service_target, "query_soc"):
+                ans = service_target.query_soc(
+                    query=user_query,
+                    event_id=event_id,
+                    bundle=bundle
+                )
+            elif hasattr(service_target, "process_query"):
+                ans = service_target.process_query(
+                    query=user_query,
+                    event_id=event_id,
+                    bundle=bundle
+                )
+            else:
+                ans = {
+                    "explanation": "No query processor or service available.",
+                    "current_status": "UNAVAILABLE",
+                    "risk_level": "DEFCON_UNKNOWN",
+                    "confidence": 0.0,
+                    "evidence": [],
+                    "agent_findings": {},
+                    "rag_sources": [],
+                    "recommended_next_action": ["CHECK_BACKEND_STATUS"]
+                }
 
             # Visual Flow: USER QUERY -> LOCUS ANALYSIS -> EVIDENCE -> AGENT FINDINGS -> RAG CONTEXT -> FINAL ANSWER
             st.markdown(
@@ -75,13 +94,13 @@ def render_query_terminal(processor, event_id: str, bundle=None):
             )
 
             # Final Answer
-            st.markdown("#### 🎯 Grounded SOC Answer:")
+            st.markdown("#### Grounded SOC Answer:")
             st.info(ans.get("explanation", "No explanation available."))
 
             # Recommended Actions
-            st.markdown("#### 🛡️ Mandated Operator Actions:")
+            st.markdown("#### Mandated Operator Actions:")
             for act in ans.get("recommended_next_action", []):
                 st.markdown(f"- **`{act}`**")
 
-            with st.expander("🔍 Inspect Full Structured JSON Response"):
+            with st.expander("Inspect Full Structured JSON Response"):
                 st.json(ans)

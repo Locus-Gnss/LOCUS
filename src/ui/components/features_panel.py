@@ -13,7 +13,7 @@ def render_features_panel(features_list: list, df_features: pd.DataFrame = None)
     Render canonical 10-D feature vector with units, calibrated limits, status chips,
     and historical mini-trends.
     """
-    st.subheader("🛡️ Official 10-Dimensional Security Feature Vector")
+    st.subheader("Official 10-Dimensional Security Feature Vector")
     st.caption("Standardized Schema: `locus-sec-v2.0-10d` • Physics, Navigation Quality & Satellite Constellation Dynamics")
 
     # Render Metric Cards in two rows of 5
@@ -73,7 +73,7 @@ def render_features_panel(features_list: list, df_features: pd.DataFrame = None)
 
     # Historical trends if df_features is available
     if df_features is not None and not df_features.empty:
-        with st.expander("📈 View 10-D Feature Historical Sequences"):
+        with st.expander("View 10-D Feature Historical Sequences"):
             feat_select = st.selectbox(
                 "Select Feature for Sequence Inspection:",
                 options=[f["feature"] for f in features_list],

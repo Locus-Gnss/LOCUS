@@ -6,12 +6,13 @@ Module: src.ui.components.rag_panel
 import streamlit as st
 
 
-def render_rag_panel(rag_sources: list, rag_engine=None):
+def render_rag_panel(rag_sources: list, rag_engine=None, service=None):
     """
     Render technical regulatory grounding panel with verified standards (ICAO, RTCA, CISA, MITRE).
     Provides standalone regulatory search and grounded citations.
     """
-    st.subheader("📚 Regulatory RAG Knowledge & Standards Grounding")
+    rag_target = service or rag_engine
+    st.subheader("Regulatory RAG Knowledge & Standards Grounding")
     st.caption("Aviation Standards & Cyber Doctrine • ICAO Annex 10 • RTCA DO-229E • CISA PNT • MITRE ATT&CK for Space")
 
     # Critical Invariant Notice
@@ -63,11 +64,17 @@ def render_rag_panel(rag_sources: list, rag_engine=None):
     selected_sq = st.selectbox("Sample Regulatory Prompts:", sample_rag_queries)
     custom_rag_q = st.text_input("Enter custom regulatory question:", value=selected_sq)
 
-    if st.button("Query Knowledge Base", type="primary") and rag_engine:
+    if st.button("Query Knowledge Base", type="primary") and rag_target:
         with st.spinner("Retrieving regulatory standards from indexed vector store..."):
-            res = rag_engine.query(text=custom_rag_q, top_k=3)
+            if hasattr(rag_target, "query_rag"):
+                res = rag_target.query_rag(query=custom_rag_q, top_k=3)
+            elif hasattr(rag_target, "query"):
+                res = rag_target.query(text=custom_rag_q, top_k=3)
+            else:
+                res = {"is_grounded": False}
+
             if res.get("is_grounded"):
-                st.success("✅ Regulatory Grounding Retrieved")
+                st.success("Regulatory Grounding Retrieved")
                 st.write("**Referenced Standards:**", ", ".join(res.get("regulatory_standards", [])))
                 for c in res.get("citations", []):
                     st.markdown(f"""

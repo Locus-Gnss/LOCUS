@@ -13,9 +13,11 @@ def render_telemetry_panel(df_telemetry: pd.DataFrame, conn_info: dict):
     """
     Render live/historical telemetry metrics and time-series trend graphs.
     """
-    st.subheader("🛰️ GNSS Telemetry & Kinematic Dynamics")
-    mode_text = conn_info.get("mode", "HISTORICAL / REPLAY MODE")
-    st.caption(f"Sensor Mode: **{mode_text}** • Telemetry Provenance: **REAL GNSS TELEMETRY (7Semi L89HA)**")
+    st.subheader("GNSS Telemetry & Kinematic Dynamics")
+    mode_text = conn_info.get("mode", "DATA MODE: GNSS REPLAY")
+    source_text = conn_info.get("source", "Recorded L89HA Session")
+    hw_status = conn_info.get("hardware_status", "Not Connected")
+    st.caption(f"**{mode_text}** • Source: **{source_text}** • Live Hardware: **{hw_status}** • Telemetry Provenance: **REAL GNSS TELEMETRY (7Semi L89HA)**")
 
     if df_telemetry.empty:
         st.warning("No GNSS telemetry records available in processed dataset. Awaiting sensor stream.")

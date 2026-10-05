@@ -38,16 +38,31 @@ class SecurityQueryProcessor:
         self.agent1 = GNSSIntegrityAgent()
         self.agent2 = TemporalThreatAgent()
         self.agent3 = MasterSOCAgent()
-        self.rag_engine = rag_engine or SecurityRAGEngine(
-            knowledge_base_dir="knowledge_base",
-            db_path="data/rag/vector_store.db",
-            auto_index=True
-        )
+        self._rag_engine = rag_engine
+        self._cached_events: Optional[List[Dict[str, Any]]] = None
+        self._bundle_cache: Dict[str, EvidenceBundle] = {}
+
+    @property
+    def rag_engine(self) -> SecurityRAGEngine:
+        if self._rag_engine is None:
+            self._rag_engine = SecurityRAGEngine(
+                knowledge_base_dir="knowledge_base",
+                db_path="data/rag/vector_store.db",
+                auto_index=True
+            )
+        return self._rag_engine
+
+    @rag_engine.setter
+    def rag_engine(self, engine: SecurityRAGEngine):
+        self._rag_engine = engine
 
     def list_available_events(self) -> List[Dict[str, Any]]:
         """
-        List all available indexed GNSS events from evidence storage.
+        List all available indexed GNSS events from evidence storage (cached in-memory).
         """
+        if self._cached_events is not None:
+            return self._cached_events
+
         if not os.path.isdir(self.evidence_dir):
             return []
 
@@ -68,14 +83,18 @@ class SecurityQueryProcessor:
                         })
                 except Exception:
                     continue
+        self._cached_events = events
         return events
 
     list_events = list_available_events
 
     def load_event(self, event_id: str) -> Optional[EvidenceBundle]:
         """
-        Retrieve EvidenceBundle by event_id or file name.
+        Retrieve EvidenceBundle by event_id or file name (cached in-memory).
         """
+        if event_id in self._bundle_cache:
+            return self._bundle_cache[event_id]
+
         if not os.path.isdir(self.evidence_dir):
             return None
 
@@ -90,7 +109,11 @@ class SecurityQueryProcessor:
         for fname in os.listdir(self.evidence_dir):
             if fname in target_fnames:
                 fpath = os.path.join(self.evidence_dir, fname)
-                return self._parse_bundle_file(fpath)
+                bundle = self._parse_bundle_file(fpath)
+                if bundle:
+                    self._bundle_cache[event_id] = bundle
+                    self._bundle_cache[bundle.event_id] = bundle
+                    return bundle
 
         # Search inside files for matching event_id
         for fname in os.listdir(self.evidence_dir):
@@ -100,7 +123,11 @@ class SecurityQueryProcessor:
                     with open(fpath, "r", encoding="utf-8") as f:
                         data = json.load(f)
                         if data.get("event_id") == event_id:
-                            return self._dict_to_bundle(data)
+                            bundle = self._dict_to_bundle(data)
+                            if bundle:
+                                self._bundle_cache[event_id] = bundle
+                                self._bundle_cache[bundle.event_id] = bundle
+                                return bundle
                 except Exception:
                     continue
         return None

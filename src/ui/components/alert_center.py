@@ -11,11 +11,11 @@ def render_alert_center(alerts: list, on_select_event=None):
     """
     Render filterable alert center and incident queue.
     """
-    st.subheader("🚨 Security Alert Center & Incident Queue")
+    st.subheader("Security Alert Center & Incident Queue")
     st.caption("Central Incident Dispatch • Correlated Multi-Detector Alarms • High-Priority Incident Management")
 
     if not alerts:
-        st.success("✅ Clean security queue: No anomalies or threat incidents flagged.")
+        st.success("Clean security queue: No anomalies or threat incidents flagged.")
         return None
 
     # Severity filters
@@ -61,7 +61,7 @@ def render_alert_center(alerts: list, on_select_event=None):
 
     # Interactive selector for alert details drill-down
     st.markdown("---")
-    st.markdown("##### 🔍 Drill-Down into Incident Evidence")
+    st.markdown("##### Drill-Down into Incident Evidence")
     alert_ids = [a["alert_id"] for a in filtered]
     if alert_ids:
         selected_alert_id = st.selectbox(

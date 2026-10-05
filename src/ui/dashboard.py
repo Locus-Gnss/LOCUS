@@ -27,7 +27,6 @@ from src.ui.components.health_panel import render_health_panel
 # Set page configuration
 st.set_page_config(
     page_title="LOCUS — GNSS Security Operations Center",
-    page_icon="🛰️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -56,13 +55,23 @@ def load_cached_datasets():
     return df_tel, df_feat, alerts, health
 
 
+@st.cache_data(ttl=60)
+def get_cached_events():
+    return service.get_events()
+
+
+@st.cache_data(ttl=60)
+def get_cached_deliberation(event_id: str):
+    return service.deliberate_event(event_id)
+
+
 df_telemetry, df_features, alerts_list, health_matrix = load_cached_datasets()
 
 # Sidebar: Navigation & Event Selection
-st.sidebar.markdown("### 🛰️ LOCUS SOC Command")
+st.sidebar.markdown("### LOCUS SOC Command")
 st.sidebar.caption("Autonomous GNSS Threat Detection & Agentic SOC")
 
-events = service.processor.list_available_events()
+events = get_cached_events()
 event_ids = [e["event_id"] for e in events] if events else ["No Events"]
 
 selected_event_id = st.sidebar.selectbox(
@@ -75,17 +84,17 @@ selected_event_id = st.sidebar.selectbox(
 nav_section = st.sidebar.radio(
     "Security Console Views:",
     options=[
-        "📊 Main SOC Overview",
-        "🛰️ Live GNSS Monitoring",
-        "🗺️ Geospatial Map View",
-        "🛡️ 10-D Security Features",
-        "🔍 Detection & ML Quad",
-        "🚨 Alert Center",
-        "📋 Evidence Bundle",
-        "🤖 3-Agent Security SOC",
-        "📚 Regulatory RAG",
-        "💬 SOC Query Assistant",
-        "⚙️ System Health"
+        "Main SOC Overview",
+        "Live GNSS Monitoring",
+        "Geospatial Map View",
+        "10-D Security Features",
+        "Detection & ML Quad",
+        "Alert Center",
+        "Evidence Bundle",
+        "3-Agent Security SOC",
+        "Regulatory RAG",
+        "SOC Query Assistant",
+        "System Health"
     ]
 )
 
@@ -100,13 +109,9 @@ st.sidebar.markdown("""
 """)
 
 # Load active event bundle & deliberation
-active_bundle = service.processor.load_event(selected_event_id)
+active_bundle = service.load_event(selected_event_id)
 if active_bundle:
-    delib = service.processor.process_query(
-        query="Initial security status assessment.",
-        event_id=selected_event_id,
-        bundle=active_bundle
-    )
+    delib = get_cached_deliberation(selected_event_id)
     current_status = delib.get("current_status", "NOMINAL")
     defcon_level = delib.get("risk_level", "DEFCON_5")
     confidence = delib.get("confidence", 1.0)
@@ -116,7 +121,7 @@ else:
     defcon_level = "DEFCON_5"
     confidence = 1.0
 
-api_online, _ = service.check_backend_status()
+api_online, api_status_msg = service.check_backend_status()
 
 # 1. Render Top Cybersecurity Navbar
 render_navbar(
@@ -125,6 +130,13 @@ render_navbar(
     defcon_level=defcon_level,
     api_online=api_online
 )
+
+# Waking up / Connectivity status notification (graceful degradation)
+if not api_online:
+    if "waking up" in api_status_msg.lower():
+        st.warning(f"**Backend Notice:** {api_status_msg}")
+    else:
+        st.info(f"**Standalone Mode Active:** FastAPI backend is currently unavailable ({api_status_msg}). Running in local replay mode with verified dataset.")
 
 # Latest Telemetry Metrics for KPI cards
 tel_metrics = service.get_latest_telemetry_metrics()
@@ -141,8 +153,8 @@ render_kpi_cards(
 st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
 
 # 3. View Routing
-if nav_section == "📊 Main SOC Overview":
-    st.subheader("🎯 Executive Security Overview & Operational Directives")
+if nav_section == "Main SOC Overview":
+    st.subheader("Executive Security Overview & Operational Directives")
     st.caption(f"Active Incident Event: `{selected_event_id}` • Defcon State: `{defcon_level}` • Consensus Confidence: `{confidence*100:.1f}%`")
 
     col_sum, col_dir = st.columns([3, 2])
@@ -177,51 +189,51 @@ if nav_section == "📊 Main SOC Overview":
         canonical_feats = service.get_canonical_10d_features(bundle=active_bundle)
         render_features_panel(canonical_feats)
 
-elif nav_section == "🛰️ Live GNSS Monitoring":
+elif nav_section == "Live GNSS Monitoring":
     render_telemetry_panel(df_telemetry=df_telemetry, conn_info=conn_info)
 
-elif nav_section == "🗺️ Geospatial Map View":
+elif nav_section == "Geospatial Map View":
     render_map_panel(df_telemetry=df_telemetry, alerts=alerts_list)
 
-elif nav_section == "🛡️ 10-D Security Features":
+elif nav_section == "10-D Security Features":
     canonical_feats = service.get_canonical_10d_features(bundle=active_bundle)
     render_features_panel(features_list=canonical_feats, df_features=df_features)
 
-elif nav_section == "🔍 Detection & ML Quad":
+elif nav_section == "Detection & ML Quad":
     bundle_dict = active_bundle.to_dict() if active_bundle else {}
     render_detection_panel(
         bundle_dict=bundle_dict,
         final_verdict=delib.get("agent_findings", {}).get("agent_3_master_soc")
     )
 
-elif nav_section == "🚨 Alert Center":
+elif nav_section == "Alert Center":
     clicked_event = render_alert_center(alerts=alerts_list)
     if clicked_event:
         st.info(f"Viewing selected alert: `{clicked_event}`")
-        alt_bundle = service.processor.load_event(clicked_event)
+        alt_bundle = service.load_event(clicked_event)
         if alt_bundle:
             render_evidence_panel(alt_bundle)
 
-elif nav_section == "📋 Evidence Bundle":
+elif nav_section == "Evidence Bundle":
     if active_bundle:
         render_evidence_panel(bundle=active_bundle, deliberation_result=delib)
     else:
         st.warning("No active Evidence Bundle selected.")
 
-elif nav_section == "🤖 3-Agent Security SOC":
+elif nav_section == "3-Agent Security SOC":
     agent_findings = delib.get("agent_findings", {})
     render_agent_soc_panel(agent_findings=agent_findings)
 
-elif nav_section == "📚 Regulatory RAG":
+elif nav_section == "Regulatory RAG":
     rag_sources = delib.get("rag_sources", [])
-    render_rag_panel(rag_sources=rag_sources, rag_engine=service.processor.rag_engine)
+    render_rag_panel(rag_sources=rag_sources, service=service)
 
-elif nav_section == "💬 SOC Query Assistant":
+elif nav_section == "SOC Query Assistant":
     render_query_terminal(
-        processor=service.processor,
+        service=service,
         event_id=selected_event_id,
         bundle=active_bundle
     )
 
-elif nav_section == "⚙️ System Health":
+elif nav_section == "System Health":
     render_health_panel(health_matrix=health_matrix)

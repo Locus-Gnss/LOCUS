@@ -24,11 +24,6 @@ from typing import Dict, List, Optional, Union, Any
 import numpy as np
 import pandas as pd
 
-from src.detection.physical_rules import PhysicalRulesEngine, PhysicalRulesConfig
-from src.detection.isolation_forest import IsolationForestDetector, OFFICIAL_SECURITY_FEATURES
-from src.detection.xgboost_detector import XGBoostDetector
-from src.detection.temporal_model import TemporalDetector
-
 DEFAULT_EVIDENCE_DIR = os.path.join("data", "evidence")
 
 
@@ -85,12 +80,17 @@ class EvidenceFusionEngine:
 
     def __init__(
         self,
-        rules_engine: Optional[PhysicalRulesEngine] = None,
-        iforest_detector: Optional[IsolationForestDetector] = None,
-        xgb_detector: Optional[XGBoostDetector] = None,
-        temporal_detector: Optional[TemporalDetector] = None,
+        rules_engine: Optional[Any] = None,
+        iforest_detector: Optional[Any] = None,
+        xgb_detector: Optional[Any] = None,
+        temporal_detector: Optional[Any] = None,
         pipeline_tier: str = "PRODUCTION"
     ):
+        from src.detection.physical_rules import PhysicalRulesEngine
+        from src.detection.isolation_forest import IsolationForestDetector
+        from src.detection.xgboost_detector import XGBoostDetector
+        from src.detection.temporal_model import TemporalDetector
+
         self.rules_engine = rules_engine or PhysicalRulesEngine()
         self.pipeline_tier = pipeline_tier
 

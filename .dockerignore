@@ -1,0 +1,45 @@
+# Version control
+.git
+.gitignore
+
+# Python cache & virtual environments
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.venv
+venv
+ENV/
+env/
+.pytest_cache
+
+# Environment & local secrets
+.env
+.env.*
+
+# Logs
+*.log
+
+# Backend-only code (thin-client GUI communicates via REST API)
+src/api/
+src/agents/
+src/detection/
+src/evidence/
+src/query/
+src/rag/
+
+# Backend models, training artifacts & datasets
+models/
+data/
+knowledge_base/
+
+# Testing, development & research artifacts
+tests/
+scripts/
+notebooks/
+reports/
+
+# IDE & agent files
+.vscode/
+.idea/
+.gemini/

@@ -5,19 +5,29 @@ Focus: High-reliability HTTP client connecting the GUI frontend to the FastAPI R
 Handles timeouts, HTTP status errors, and connection drops gracefully without crashing the UI.
 """
 
+import os
+import socket
 import json
 from typing import Dict, List, Optional, Any, Tuple
 import urllib.request
 import urllib.error
+import urllib.parse
+
+DEFAULT_API_URL = os.getenv(
+    "LOCUS_API_URL",
+    "https://locus-5b9g.onrender.com"
+).rstrip("/")
 
 
 class SOCApiClient:
     """
-    Client for interacting with the LOCUS FastAPI REST API backend (default http://127.0.0.1:8000).
+    Client for interacting with the LOCUS FastAPI REST API backend.
+    Configured via LOCUS_API_URL environment variable, defaulting to the production Render deployment.
     """
 
-    def __init__(self, base_url: str = "http://127.0.0.1:8000", timeout_sec: float = 4.0):
-        self.base_url = base_url.rstrip("/")
+    def __init__(self, base_url: Optional[str] = None, timeout_sec: float = 15.0):
+        url = base_url if base_url is not None else os.getenv("LOCUS_API_URL", DEFAULT_API_URL)
+        self.base_url = url.rstrip("/")
         self.timeout = timeout_sec
 
     def _request(
@@ -66,13 +76,21 @@ class SOCApiClient:
                 detail = err_body.get("detail", str(e))
             except Exception:
                 detail = str(e)
+            if e.code in (502, 503, 504):
+                return False, None, "LOCUS backend is waking up. Please retry shortly."
             return False, None, f"API Error {e.code}: {detail}"
 
-        except urllib.error.URLError as e:
-            return False, None, f"Backend connection failed at {self.base_url}: {e.reason}"
+        except (urllib.error.URLError, TimeoutError, socket.timeout) as e:
+            reason_str = str(getattr(e, "reason", e))
+            if "timed out" in reason_str.lower():
+                return False, None, "LOCUS backend is waking up. Please retry shortly."
+            return False, None, f"Backend connection failed at {self.base_url}: {reason_str}"
 
         except Exception as e:
-            return False, None, f"Network error: {str(e)}"
+            err_str = str(e)
+            if "timed out" in err_str.lower():
+                return False, None, "LOCUS backend is waking up. Please retry shortly."
+            return False, None, f"Network error: {err_str}"
 
     def check_health(self) -> Tuple[bool, Dict[str, Any], Optional[str]]:
         """GET /api/health"""

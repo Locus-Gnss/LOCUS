@@ -15,7 +15,7 @@ def render_detection_panel(bundle_dict: dict, final_verdict: dict = None):
     4. TEMPORAL MODEL: LSTM Sequence Autoencoder
     5. FINAL DECISION: Master SOC Deliberation
     """
-    st.subheader("🛡️ Multi-Detector Quad & Machine Learning Anomaly Detection")
+    st.subheader("Multi-Detector Quad & Machine Learning Anomaly Detection")
     st.caption("Decoupled Inference Architecture • Invariant Physics + Spatial + Supervised + Sequence Models")
 
     pr = bundle_dict.get("physical_rules", {})
@@ -50,7 +50,7 @@ def render_detection_panel(bundle_dict: dict, final_verdict: dict = None):
         if pr.get("triggered_rules"):
             st.json(pr["triggered_rules"])
         else:
-            st.success("✅ Zero physical kinematic invariants violated (Mach 1, 4g acceleration, jump bounds nominal).")
+            st.success("Zero physical kinematic invariants violated (Mach 1, 4g acceleration, jump bounds nominal).")
 
         # 3. SUPERVISED ML (XGBoost)
         st.markdown(

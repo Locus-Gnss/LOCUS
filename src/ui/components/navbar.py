@@ -13,8 +13,10 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
     """
     now_utc = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     is_live = conn_info.get("is_live", False)
-    mode_text = conn_info.get("mode", "HISTORICAL / REPLAY MODE")
+    mode_text = conn_info.get("mode", "DATA MODE: GNSS REPLAY")
     prov_text = conn_info.get("provenance", "REAL GNSS TELEMETRY")
+    source_text = conn_info.get("source", "Recorded L89HA Session")
+    hw_status = conn_info.get("hardware_status", "Not Connected")
 
     col_title, col_meta = st.columns([3, 2])
 
@@ -22,7 +24,7 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
         st.markdown(
             """
             <div style='display: flex; align-items: baseline; gap: 12px;'>
-                <span style='font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #38bdf8;'>🛰️ LOCUS</span>
+                <span style='font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #38bdf8;'>LOCUS</span>
                 <span style='font-size: 16px; font-weight: 600; color: #cbd5e1;'>GNSS Security Operations Center</span>
                 <span class='badge-info'>v1.1 SOC</span>
             </div>
@@ -41,7 +43,8 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
             st.markdown(f"**Backend**<br/><span class='{api_badge}'>● {api_label}</span>", unsafe_allow_html=True)
         with c3:
             badge_class = "badge-normal" if is_live else "badge-info"
-            st.markdown(f"**Mode**<br/><span class='{badge_class}'>● {'LIVE' if is_live else 'REPLAY'}</span>", unsafe_allow_html=True)
+            mode_badge = "LIVE HARDWARE" if is_live else "GNSS REPLAY"
+            st.markdown(f"**Data Mode**<br/><span class='{badge_class}'>● {mode_badge}</span>", unsafe_allow_html=True)
         with c4:
             st.markdown(f"**UTC Time**<br/><code style='font-size: 10px;'>{now_utc.split()[1]}</code>", unsafe_allow_html=True)
 
@@ -50,9 +53,12 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
         f"""
         <div style='background: #0f172a; border: 1px solid #1e293b; padding: 6px 12px; border-radius: 6px; margin-bottom: 12px; font-size: 12px; display: flex; justify-content: space-between; align-items: center;'>
             <div>
-                <span style='color: #94a3b8; font-weight: 600;'>DATA PROVENANCE:</span>
-                <span class='provenance-tag'>{prov_text}</span>
-                <span class='provenance-tag'>CANONICAL 10-D FEATURES</span>
+                <span style='color: #38bdf8; font-weight: 700;'>{mode_text}</span>
+                <span style='color: #64748b; margin: 0 8px;'>•</span>
+                <span style='color: #cbd5e1;'>Source: <b>{source_text}</b></span>
+                <span style='color: #64748b; margin: 0 8px;'>•</span>
+                <span style='color: #cbd5e1;'>Live Hardware: <b>{hw_status}</b></span>
+                <span class='provenance-tag' style='margin-left: 10px;'>CANONICAL 10-D FEATURES</span>
                 <span class='provenance-tag'>MULTI-DETECTOR QUAD</span>
             </div>
             <div style='color: #64748b; font-size: 11px;'>

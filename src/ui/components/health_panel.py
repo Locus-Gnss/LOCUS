@@ -12,7 +12,7 @@ def render_health_panel(health_matrix: list):
     Render live system health checks across all hardware, pipeline, model, agent, and API layers.
     Zero fabrication: checks real files, models, and service availability.
     """
-    st.subheader("⚙️ System Health & Architectural Component Matrix")
+    st.subheader("System Health & Architectural Component Matrix")
     st.caption("Real-Time Hardware, Pipeline, Model, Agent, and API Status Auditing")
 
     df_health = pd.DataFrame(health_matrix)
