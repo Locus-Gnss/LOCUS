@@ -26,6 +26,19 @@ import pandas as pd
 
 DEFAULT_EVIDENCE_DIR = os.path.join("data", "evidence")
 
+OFFICIAL_SECURITY_FEATURES = [
+    "disp_haversine",
+    "vel_kinematic",
+    "acc_kinematic",
+    "jerk_kinematic",
+    "bearing_rate",
+    "HDOP",
+    "VDOP",
+    "fix_integrity",
+    "sat_count_tot",
+    "sat_churn",
+]
+
 
 @dataclass
 class LocationData:
