@@ -39,18 +39,32 @@ def resolve_path(rel_path: str) -> str:
         return candidate
     return rel_path
 
-# Configure CORS for development, public tunnels, and deployed frontend (e.g. FRONTEND_ORIGIN from Vercel)
+# Configure CORS for local development, public tunnels, and deployed frontend
 frontend_origin_env = os.getenv("FRONTEND_ORIGIN", "")
 cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
 
-allowed_origins = []
-if frontend_origin_env:
-    allowed_origins.extend([o.strip() for o in frontend_origin_env.split(",") if o.strip()])
-if cors_env and cors_env != "*":
-    allowed_origins.extend([o.strip() for o in cors_env.split(",") if o.strip()])
+LOCAL_DEV_ORIGINS = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+]
 
-if not allowed_origins or cors_env == "*":
-    # Permissive mode for initial deployment & tunnels
+allowed_origins = list(LOCAL_DEV_ORIGINS)
+if frontend_origin_env:
+    for o in frontend_origin_env.split(","):
+        clean_o = o.strip()
+        if clean_o and clean_o not in allowed_origins:
+            allowed_origins.append(clean_o)
+if cors_env and cors_env != "*":
+    for o in cors_env.split(","):
+        clean_o = o.strip()
+        if clean_o and clean_o not in allowed_origins:
+            allowed_origins.append(clean_o)
+
+if cors_env == "*":
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -59,10 +73,6 @@ if not allowed_origins or cors_env == "*":
         allow_headers=["*"],
     )
 else:
-    # Always include local development origins
-    for dev in ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]:
-        if dev not in allowed_origins:
-            allowed_origins.append(dev)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,

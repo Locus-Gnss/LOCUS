@@ -7,7 +7,7 @@ const rawBase = import.meta.env.VITE_API_URL || '';
 const BASE_URL = rawBase.trim().replace(/\/+$/, '');
 
 export function getApiBaseUrl() {
-  return BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+  return BASE_URL || 'http://127.0.0.1:8000';
 }
 
 async function request(endpoint, options = {}) {
