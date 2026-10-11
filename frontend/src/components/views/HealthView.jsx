@@ -117,9 +117,9 @@ export default function HealthView({ health }) {
     {
       name: 'FastAPI Decoupled REST Backend',
       tier: 'API Layer',
-      status: health?.status === 'HEALTHY' ? 'ONLINE' : 'ONLINE',
+      status: health?.status === 'HEALTHY' ? 'ONLINE' : (health?.status || 'ONLINE'),
       version: 'fastapi-v1.0',
-      details: 'Uvicorn ASGI server active on http://127.0.0.1:8000 (/api/health 200 OK)'
+      details: `Uvicorn ASGI server active on ${locusApi.getBaseUrl() || 'production API'} (/api/health 200 OK)`
     },
     {
       name: 'Forensic Evidence Repository',

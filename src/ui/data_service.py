@@ -565,14 +565,7 @@ class SOCDataService:
                 "type": "UNSUPERVISED_SPATIAL_ANOMALY",
                 "version": "iforest-tuned-v1.1"
             },
-            "xgboost": {
-                "name": "Supervised XGBoost Classifier",
-                "status": "OPERATIONAL" if xgb_fitted else "UNAVAILABLE — MODEL NOT TRAINED",
-                "is_fitted": xgb_fitted,
-                "type": "SUPERVISED_ATTACK_CLASSIFIER",
-                "version": "xgb-unfitted-v1.0" if not xgb_fitted else "xgb-v1.0",
-                "note": "Supervised training requires labelled attack scenario data. Awaiting labelled simulation or live test scenarios." if not xgb_fitted else "Fitted production model active."
-            },
+            "xgboost": XGBoostDetector.get_status_info(),
             "temporal_lstm": {
                 "name": "Temporal LSTM Autoencoder",
                 "status": "READY" if lstm_fitted else "FALLBACK",

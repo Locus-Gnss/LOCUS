@@ -3,12 +3,21 @@
  * Connects frontend directly to FastAPI REST backend on :8000
  */
 
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const rawBase = import.meta.env.VITE_API_URL || '';
+const BASE_URL = rawBase.trim().replace(/\/+$/, '');
+
+export function getApiBaseUrl() {
+  return BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+}
 
 async function request(endpoint, options = {}) {
-  const url = `${BASE_URL}${endpoint}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${BASE_URL}${cleanEndpoint}`;
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 45000);
     const res = await fetch(url, {
+      signal: options.signal || controller.signal,
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -16,18 +25,25 @@ async function request(endpoint, options = {}) {
       },
       ...options,
     });
+    clearTimeout(timeoutId);
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
       throw new Error(errBody.detail || `HTTP ${res.status}: ${res.statusText}`);
     }
     return await res.json();
   } catch (err) {
+    if (err.name === 'AbortError') {
+      const coldMsg = 'Backend request timed out (service may be waking from cold start). Please wait 30 seconds and retry.';
+      console.warn(coldMsg);
+      throw new Error(coldMsg);
+    }
     console.error(`API Error on ${endpoint}:`, err);
     throw err;
   }
 }
 
 export const locusApi = {
+  getBaseUrl: getApiBaseUrl,
   // System Health
   getHealth: () => request('/api/health'),
 

@@ -27,17 +27,49 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for development, public tunnels, and deployed frontend
-cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "*")
-cors_origins = ["*"] if cors_env == "*" else [o.strip() for o in cors_env.split(",") if o.strip()]
+# Portable project root resolver
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=cors_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def resolve_path(rel_path: str) -> str:
+    """Resolve a relative project path portably against cwd or PROJECT_ROOT."""
+    if os.path.exists(rel_path):
+        return rel_path
+    candidate = os.path.join(PROJECT_ROOT, rel_path)
+    if os.path.exists(candidate):
+        return candidate
+    return rel_path
+
+# Configure CORS for development, public tunnels, and deployed frontend (e.g. FRONTEND_ORIGIN from Vercel)
+frontend_origin_env = os.getenv("FRONTEND_ORIGIN", "")
+cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "")
+
+allowed_origins = []
+if frontend_origin_env:
+    allowed_origins.extend([o.strip() for o in frontend_origin_env.split(",") if o.strip()])
+if cors_env and cors_env != "*":
+    allowed_origins.extend([o.strip() for o in cors_env.split(",") if o.strip()])
+
+if not allowed_origins or cors_env == "*":
+    # Permissive mode for initial deployment & tunnels
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    # Always include local development origins
+    for dev in ["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:3000"]:
+        if dev not in allowed_origins:
+            allowed_origins.append(dev)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 # Lazy singleton for query processor to prevent heavy imports during startup
 _processor = None
@@ -253,7 +285,8 @@ def serve_gui(request: Request):
 
 
 
-@app.get("/api/health")
+@app.get("/health", summary="Service Health Check")
+@app.get("/api/health", summary="API Health Check")
 def health_check():
     """
     Return comprehensive system health and component statuses.
@@ -318,7 +351,7 @@ _cached_telemetry_valid = None
 def _get_telemetry_valid_df():
     global _cached_telemetry_valid
     if _cached_telemetry_valid is None:
-        csv_path = "data/processed/locus_telemetry_clean.csv"
+        csv_path = resolve_path("data/processed/locus_telemetry_clean.csv")
         if not os.path.exists(csv_path):
             return None
         import pandas as pd
@@ -415,7 +448,7 @@ def _get_latest_features_payload():
     if _cached_features_payload is not None:
         return _cached_features_payload
 
-    csv_path = "data/features/locus_security_features.csv"
+    csv_path = resolve_path("data/features/locus_security_features.csv")
     if not os.path.exists(csv_path):
         return {"features": {}, "status": "NO DATA"}
 
@@ -686,7 +719,7 @@ def process_pipeline_data(req: PipelineProcessRequest):
         _latest_pipeline_run = res_dict
 
         # Persist run audit artifact
-        runs_dir = "data/runs"
+        runs_dir = resolve_path("data/runs")
         os.makedirs(runs_dir, exist_ok=True)
         run_file = os.path.join(runs_dir, f"run_{result.run_id}.json")
         try:
@@ -713,7 +746,7 @@ def get_latest_pipeline_run():
         return _latest_pipeline_run
 
     # Fallback to most recent file in data/runs
-    runs_dir = "data/runs"
+    runs_dir = resolve_path("data/runs")
     if os.path.exists(runs_dir):
         files = [os.path.join(runs_dir, f) for f in os.listdir(runs_dir) if f.startswith("run_") and f.endswith(".json")]
         if files:
@@ -741,7 +774,7 @@ def get_pipeline_run_by_id(run_id: str):
     if _latest_pipeline_run and _latest_pipeline_run.get("run_id") == run_id:
         return _latest_pipeline_run
 
-    run_file = os.path.join("data", "runs", f"run_{run_id}.json")
+    run_file = resolve_path(os.path.join("data", "runs", f"run_{run_id}.json"))
     if os.path.exists(run_file):
         try:
             import json
@@ -763,14 +796,14 @@ def get_models_status():
     from src.detection.isolation_forest import IsolationForestDetector
     from src.detection.temporal_model import TemporalDetector
 
-    xgb_path = "models/production/xgboost/xgboost_detector.joblib"
+    xgb_path = resolve_path("models/production/xgboost/xgboost_detector.joblib")
     xgb_fitted = os.path.exists(xgb_path)
 
-    if_path = "models/production/isolation_forest/isolation_forest.joblib"
-    if_fitted = os.path.exists(if_path) or os.path.exists("models/isolation_forest/isolation_forest_tuned.joblib")
+    if_path = resolve_path("models/production/isolation_forest/isolation_forest.joblib")
+    if_fitted = os.path.exists(if_path) or os.path.exists(resolve_path("models/isolation_forest/isolation_forest_tuned.joblib"))
 
-    lstm_path = "models/production/temporal/temporal_model.pt"
-    lstm_fitted = os.path.exists(lstm_path) or os.path.exists("models/temporal/temporal_model_tuned.pt")
+    lstm_path = resolve_path("models/production/temporal/temporal_model.pt")
+    lstm_fitted = os.path.exists(lstm_path) or os.path.exists(resolve_path("models/temporal/temporal_model_tuned.pt"))
 
     return {
         "detectors": {
@@ -828,7 +861,7 @@ def train_model(req: ModelTrainRequest):
     if req.model_type == "xgboost":
         try:
             from scripts.train_xgboost import run_training_pipeline
-            target_dataset = req.dataset_path or "data/features/locus_security_features.csv"
+            target_dataset = resolve_path(req.dataset_path) if req.dataset_path else resolve_path("data/features/locus_security_features.csv")
             report = run_training_pipeline(
                 dataset_path=target_dataset,
                 label_column=req.label_column,
@@ -847,8 +880,8 @@ def train_model(req: ModelTrainRequest):
     try:
         from src.detection.tune_isolation_forest import run_isolation_forest_tuning
         results = run_isolation_forest_tuning(
-            features_csv="data/features/locus_security_features.csv",
-            output_dir="models/isolation_forest",
+            features_csv=resolve_path("data/features/locus_security_features.csv"),
+            output_dir=resolve_path("models/isolation_forest"),
             contamination=req.contamination,
             n_estimators=req.n_estimators
         )
@@ -865,4 +898,8 @@ def train_model(req: ModelTrainRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("src.api.app:app", host="127.0.0.1", port=8000, reload=True)
+    host = os.getenv("HOST", "0.0.0.0")
+    port = int(os.getenv("PORT", 8000))
+    reload = os.getenv("ENVIRONMENT", "development").lower() == "development"
+    uvicorn.run("src.api.app:app", host=host, port=port, reload=reload)
+
