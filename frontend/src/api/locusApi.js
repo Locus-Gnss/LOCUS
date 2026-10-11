@@ -12,19 +12,38 @@ export function getApiBaseUrl() {
 
 async function request(endpoint, options = {}) {
   const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
-  const url = `${BASE_URL}${cleanEndpoint}`;
+  let url = `${BASE_URL}${cleanEndpoint}`;
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 45000);
-    const res = await fetch(url, {
-      signal: options.signal || controller.signal,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      ...options,
-    });
+    const timeoutId = setTimeout(() => controller.abort(), options.timeout || 15000);
+    let res;
+    try {
+      res = await fetch(url, {
+        signal: options.signal || controller.signal,
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+        ...options,
+      });
+    } catch (fetchErr) {
+      // If relative URL via Vite dev proxy fails, automatically attempt direct connection to port 8000
+      if (!BASE_URL && typeof window !== 'undefined') {
+        const directUrl = `http://127.0.0.1:8000${cleanEndpoint}`;
+        res = await fetch(directUrl, {
+          signal: options.signal || controller.signal,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            ...options.headers,
+          },
+          ...options,
+        });
+      } else {
+        throw fetchErr;
+      }
+    }
     clearTimeout(timeoutId);
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));
@@ -33,9 +52,9 @@ async function request(endpoint, options = {}) {
     return await res.json();
   } catch (err) {
     if (err.name === 'AbortError') {
-      const coldMsg = 'Backend request timed out (service may be waking from cold start). Please wait 30 seconds and retry.';
-      console.warn(coldMsg);
-      throw new Error(coldMsg);
+      const msg = 'Request timed out. Please verify that the FastAPI backend is running on http://127.0.0.1:8000.';
+      console.warn(msg);
+      throw new Error(msg);
     }
     console.error(`API Error on ${endpoint}:`, err);
     throw err;
