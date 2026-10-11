@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_ecd567c0c93c",
+  "incident_id": "inc_b648c2a346db",
   "event_id": "evt_4_352",
   "timestamp_utc": "2026-09-25T05:07:55.000000Z",
   "session_id": 4,
@@ -23,11 +23,9 @@
     "confidence_score": 0.98,
     "kinematic_health": 1.0,
     "geometry_health": 1.0,
-    "physical_violation_count": 1,
-    "violated_rules": [
-      "PR_INT_001"
-    ],
-    "max_rule_severity": "WARNING",
+    "physical_violation_count": 0,
+    "violated_rules": [],
+    "max_rule_severity": "INFO",
     "discard_recommended": false,
     "verdict_summary": "NOMINAL: Kinematics and constellation geometry strictly conform to physical laws."
   },
@@ -39,22 +37,22 @@
     "epoch_id": 352,
     "threat_classification": "SPOOFING_TRAJECTORY_INJECTION",
     "confidence_score": 0.88,
-    "persistence_count": 6,
-    "persistence_ratio": 0.4,
-    "detector_convergence": 0.6667,
+    "persistence_count": 5,
+    "persistence_ratio": 0.5333,
+    "detector_convergence": 0.3333,
     "active_detectors_count": 3,
-    "anomalous_detectors_count": 2,
+    "anomalous_detectors_count": 1,
     "primary_feature_contributors": [
       "VDOP",
-      "acc_kinematic",
-      "jerk_kinematic"
+      "vel_kinematic",
+      "disp_haversine"
     ],
-    "lstm_reconstruction_error": 1.2822,
-    "iforest_anomaly_score": 0.3982,
+    "lstm_reconstruction_error": 0.6573,
+    "iforest_anomaly_score": 0.5799,
     "xgboost_prediction": null,
-    "threat_summary": "Sustained temporal drift detected across 6 consecutive epochs (persistence ratio: 0.40). Kinematic trajectory manipulation suspected."
+    "threat_summary": "Sustained temporal drift detected across 5 consecutive epochs (persistence ratio: 0.53). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=6, WindowRatio=0.40, Convergence=0.67. Sustained temporal drift detected across 6 consecutive epochs (persistence ratio: 0.40). Kinematic trajectory manipulation suspected. | Primary error drivers: VDOP, acc_kinematic, jerk_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=5, WindowRatio=0.53, Convergence=0.33. Sustained temporal drift detected across 5 consecutive epochs (persistence ratio: 0.53). Kinematic trajectory manipulation suspected. | Primary error drivers: VDOP, vel_kinematic, disp_haversine.",
   "location": {
     "latitude": 23.1043553,
     "longitude": 72.5924943,

@@ -52,3 +52,16 @@ Thumbs.db
 scratch/
 tmp/
 temp/
+.pytest_cache/
+
+# Frontend dependencies and production build
+frontend/dist/
+frontend/node_modules/
+dist/
+
+# Runtime test and execution cache artifacts
+data/runs/
+data/incidents/incident_evt_*.json
+data/evidence/evidence_evt_*.json
+cloudflared.exe
+

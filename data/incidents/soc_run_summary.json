@@ -1,31 +1,31 @@
 {
   "total_epochs_processed": 150,
   "defcon_distribution": {
-    "DEFCON_5": 39,
-    "DEFCON_4": 33,
+    "DEFCON_5": 10,
+    "DEFCON_4": 71,
     "DEFCON_3": 0,
-    "DEFCON_2": 78,
+    "DEFCON_2": 69,
     "DEFCON_1": 0
   },
   "attack_vectors": {
-    "BENIGN_NOMINAL": 39,
-    "MULTIPATH_INTERFERENCE": 33,
-    "PERSISTENT_TEMPORAL_DRIFT": 11,
-    "SUBTLE_SPOOFING_WALKOFF": 67
+    "BENIGN_NOMINAL": 10,
+    "MULTIPATH_INTERFERENCE": 71,
+    "PERSISTENT_TEMPORAL_DRIFT": 7,
+    "SUBTLE_SPOOFING_WALKOFF": 62
   },
   "consensus_distribution": {
-    "NOMINAL": 39,
-    "MAJORITY": 33,
-    "DISCREPANCY_FLAGGED": 78
+    "NOMINAL": 10,
+    "MAJORITY": 71,
+    "DISCREPANCY_FLAGGED": 69
   },
   "mitigations_issued": {
-    "MAINTAIN_STANDARD_FIX": 39,
-    "INCREASE_MONITORING_FREQUENCY": 33,
-    "DEGRADE_CONFIDENCE_WEIGHT": 33,
-    "REJECT_EPOCH_MEASUREMENT": 78,
-    "SWITCH_TO_INERTIAL_DEAD_RECKONING": 78,
-    "TRIGGER_RAIM_EXCLUSION": 78
+    "MAINTAIN_STANDARD_FIX": 10,
+    "INCREASE_MONITORING_FREQUENCY": 71,
+    "DEGRADE_CONFIDENCE_WEIGHT": 71,
+    "REJECT_EPOCH_MEASUREMENT": 69,
+    "SWITCH_TO_INERTIAL_DEAD_RECKONING": 69,
+    "TRIGGER_RAIM_EXCLUSION": 69
   },
-  "notable_incidents_saved": 111,
+  "notable_incidents_saved": 140,
   "stream_log": "data\\incidents\\soc_incidents_stream.jsonl"
 }

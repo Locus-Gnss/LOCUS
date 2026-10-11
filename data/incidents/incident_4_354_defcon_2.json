@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_759998e498f0",
+  "incident_id": "inc_035312339017",
   "event_id": "evt_4_354",
   "timestamp_utc": "2026-09-25T05:07:57.000000Z",
   "session_id": 4,
@@ -39,22 +39,22 @@
     "epoch_id": 354,
     "threat_classification": "SPOOFING_TRAJECTORY_INJECTION",
     "confidence_score": 0.88,
-    "persistence_count": 8,
-    "persistence_ratio": 0.5333,
+    "persistence_count": 7,
+    "persistence_ratio": 0.6667,
     "detector_convergence": 0.6667,
     "active_detectors_count": 3,
     "anomalous_detectors_count": 2,
     "primary_feature_contributors": [
       "VDOP",
-      "acc_kinematic",
-      "jerk_kinematic"
+      "vel_kinematic",
+      "disp_haversine"
     ],
-    "lstm_reconstruction_error": 1.2714,
-    "iforest_anomaly_score": 0.3797,
+    "lstm_reconstruction_error": 0.6421,
+    "iforest_anomaly_score": 0.5581,
     "xgboost_prediction": null,
-    "threat_summary": "Sustained temporal drift detected across 8 consecutive epochs (persistence ratio: 0.53). Kinematic trajectory manipulation suspected."
+    "threat_summary": "Sustained temporal drift detected across 7 consecutive epochs (persistence ratio: 0.67). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=8, WindowRatio=0.53, Convergence=0.67. Sustained temporal drift detected across 8 consecutive epochs (persistence ratio: 0.53). Kinematic trajectory manipulation suspected. | Primary error drivers: VDOP, acc_kinematic, jerk_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=7, WindowRatio=0.67, Convergence=0.67. Sustained temporal drift detected across 7 consecutive epochs (persistence ratio: 0.67). Kinematic trajectory manipulation suspected. | Primary error drivers: VDOP, vel_kinematic, disp_haversine.",
   "location": {
     "latitude": 23.1043557,
     "longitude": 72.592494,

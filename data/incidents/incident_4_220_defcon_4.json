@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_24801c9903a2",
+  "incident_id": "inc_273ac1f20a1b",
   "event_id": "evt_4_220",
   "timestamp_utc": "2026-09-25T05:05:43.000000Z",
   "session_id": 4,
@@ -43,7 +43,7 @@
     "anomalous_detectors_count": 1,
     "primary_feature_contributors": [],
     "lstm_reconstruction_error": 0.0,
-    "iforest_anomaly_score": 0.8459,
+    "iforest_anomaly_score": 0.8857,
     "xgboost_prediction": null,
     "threat_summary": "Isolated transient anomaly (streak: 1). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact."
   },

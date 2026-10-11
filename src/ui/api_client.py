@@ -1,8 +1,8 @@
 """
-LOCUS SOC REST API Client
+LOCUS Security Operations Center — REST API Client
 Module: src.ui.api_client
-Focus: High-reliability HTTP client connecting the GUI frontend to the FastAPI REST backend.
-Handles timeouts, HTTP status errors, and connection drops gracefully without crashing the UI.
+Focus: High-reliability HTTP client connecting the Streamlit GUI to the local FastAPI REST backend.
+Runs cleanly on localhost (http://127.0.0.1:8000). Handles connection timeouts and errors gracefully.
 """
 
 import os
@@ -13,19 +13,15 @@ import urllib.request
 import urllib.error
 import urllib.parse
 
-DEFAULT_API_URL = os.getenv(
-    "LOCUS_API_URL",
-    "https://locus-5b9g.onrender.com"
-).rstrip("/")
+DEFAULT_API_URL = os.getenv("LOCUS_API_URL", "http://127.0.0.1:8000").rstrip("/")
 
 
 class SOCApiClient:
     """
-    Client for interacting with the LOCUS FastAPI REST API backend.
-    Configured via LOCUS_API_URL environment variable, defaulting to the production Render deployment.
+    Client for interacting with the LOCUS FastAPI REST API backend on localhost.
     """
 
-    def __init__(self, base_url: Optional[str] = None, timeout_sec: float = 15.0):
+    def __init__(self, base_url: Optional[str] = None, timeout_sec: float = 10.0):
         url = base_url if base_url is not None else os.getenv("LOCUS_API_URL", DEFAULT_API_URL)
         self.base_url = url.rstrip("/")
         self.timeout = timeout_sec
@@ -47,7 +43,7 @@ class SOCApiClient:
 
         headers = {
             "Accept": "application/json",
-            "User-Agent": "LOCUS-SOC-Dashboard/1.1"
+            "User-Agent": "LOCUS-SOC-GUI/2.0-Local"
         }
 
         body_bytes = None
@@ -76,21 +72,14 @@ class SOCApiClient:
                 detail = err_body.get("detail", str(e))
             except Exception:
                 detail = str(e)
-            if e.code in (502, 503, 504):
-                return False, None, "LOCUS backend is waking up. Please retry shortly."
             return False, None, f"API Error {e.code}: {detail}"
 
         except (urllib.error.URLError, TimeoutError, socket.timeout) as e:
             reason_str = str(getattr(e, "reason", e))
-            if "timed out" in reason_str.lower():
-                return False, None, "LOCUS backend is waking up. Please retry shortly."
             return False, None, f"Backend connection failed at {self.base_url}: {reason_str}"
 
         except Exception as e:
-            err_str = str(e)
-            if "timed out" in err_str.lower():
-                return False, None, "LOCUS backend is waking up. Please retry shortly."
-            return False, None, f"Network error: {err_str}"
+            return False, None, f"Network error: {str(e)}"
 
     def check_health(self) -> Tuple[bool, Dict[str, Any], Optional[str]]:
         """GET /api/health"""
@@ -160,3 +149,44 @@ class SOCApiClient:
         """POST /api/soc/deliberate"""
         payload = {"event_id": event_id}
         return self._request("/api/soc/deliberate", method="POST", data=payload)
+
+    def get_canonical_assessment(self, event_id: str) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+        """GET /api/events/{event_id}/assessment"""
+        return self._request(f"/api/events/{event_id}/assessment")
+
+    def process_pipeline(
+        self,
+        data: Any,
+        format: str = "auto",
+        source_name: str = "api_upload",
+        source_type: str = "UPLOADED DATA"
+    ) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+        """POST /api/pipeline/process"""
+        payload = {
+            "data": data,
+            "format": format,
+            "source_name": source_name,
+            "source_type": source_type
+        }
+        return self._request("/api/pipeline/process", method="POST", data=payload)
+
+    def get_models_status(self) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+        """GET /api/models/status"""
+        return self._request("/api/models/status")
+
+    def train_model(
+        self,
+        model_type: str = "isolation_forest",
+        contamination: float = 0.02,
+        n_estimators: int = 200,
+        confirm_replace: bool = False
+    ) -> Tuple[bool, Dict[str, Any], Optional[str]]:
+        """POST /api/models/train"""
+        payload = {
+            "model_type": model_type,
+            "contamination": contamination,
+            "n_estimators": n_estimators,
+            "confirm_replace": confirm_replace
+        }
+        return self._request("/api/models/train", method="POST", data=payload)
+

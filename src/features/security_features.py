@@ -26,6 +26,19 @@ from typing import List, Optional, Set, Tuple
 import numpy as np
 import pandas as pd
 
+OFFICIAL_SECURITY_FEATURES = [
+    "disp_haversine",
+    "vel_kinematic",
+    "acc_kinematic",
+    "jerk_kinematic",
+    "bearing_rate",
+    "HDOP",
+    "VDOP",
+    "fix_integrity",
+    "sat_count_tot",
+    "sat_churn",
+]
+
 
 def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two points in meters using WGS-84 radius."""
@@ -131,9 +144,70 @@ class SecurityFeatureExtractor:
         if len(valid_df) == 0:
             raise ValueError("No valid locked fixes available to compute security features.")
 
+        # Ensure timestamp columns exist
+        if "timestamp_utc" not in valid_df.columns:
+            if "timestamp" in valid_df.columns:
+                valid_df["timestamp_utc"] = valid_df["timestamp"]
+            elif "datetime" in valid_df.columns:
+                valid_df["timestamp_utc"] = valid_df["datetime"]
+            elif "time" in valid_df.columns:
+                valid_df["timestamp_utc"] = valid_df["time"]
+            else:
+                valid_df["timestamp_utc"] = pd.date_range("2026-10-10 12:00:00", periods=len(valid_df), freq="1s").astype(str)
+
+        if "timestamp_pc" not in valid_df.columns:
+            valid_df["timestamp_pc"] = valid_df["timestamp_utc"]
+
+        # Ensure optional columns exist with safe defaults
+        if "session_id" not in valid_df.columns:
+            valid_df["session_id"] = 1
+        if "epoch_id" not in valid_df.columns:
+            valid_df["epoch_id"] = np.arange(1, len(valid_df) + 1)
+        if "altitude_m" not in valid_df.columns:
+            if "altitude" in valid_df.columns:
+                valid_df["altitude_m"] = valid_df["altitude"]
+            else:
+                valid_df["altitude_m"] = 0.0
+        if "heading_deg" not in valid_df.columns:
+            if "heading" in valid_df.columns:
+                valid_df["heading_deg"] = valid_df["heading"]
+            else:
+                valid_df["heading_deg"] = 0.0
+        if "fix_quality" not in valid_df.columns:
+            if "quality" in valid_df.columns:
+                valid_df["fix_quality"] = valid_df["quality"]
+            else:
+                valid_df["fix_quality"] = 1
+        if "satellites_used" not in valid_df.columns:
+            if "satellites" in valid_df.columns:
+                valid_df["satellites_used"] = valid_df["satellites"]
+            elif "sat_count_tot" in valid_df.columns:
+                valid_df["satellites_used"] = valid_df["sat_count_tot"]
+            elif "num_sats" in valid_df.columns:
+                valid_df["satellites_used"] = valid_df["num_sats"]
+            else:
+                valid_df["satellites_used"] = 8
+        if "hdop" not in valid_df.columns:
+            if "HDOP" in valid_df.columns:
+                valid_df["hdop"] = valid_df["HDOP"]
+            else:
+                valid_df["hdop"] = 1.0
+        if "vdop" not in valid_df.columns:
+            if "VDOP" in valid_df.columns:
+                valid_df["vdop"] = valid_df["VDOP"]
+            else:
+                valid_df["vdop"] = 1.0
+        if "pdop" not in valid_df.columns:
+            if "PDOP" in valid_df.columns:
+                valid_df["pdop"] = valid_df["PDOP"]
+            else:
+                valid_df["pdop"] = 1.25
+        if "avg_cno" not in valid_df.columns:
+            valid_df["avg_cno"] = 35.0
+
         # Ensure timestamps are parsed
-        pc_dts = pd.to_datetime(valid_df["timestamp_pc"])
-        gnss_dts = pd.to_datetime(valid_df["timestamp_utc"], utc=True)
+        pc_dts = pd.to_datetime(valid_df["timestamp_pc"], errors="coerce")
+        gnss_dts = pd.to_datetime(valid_df["timestamp_utc"], utc=True, errors="coerce")
         valid_df["_pc_dt"] = pc_dts
         valid_df["_gnss_dt"] = gnss_dts
 
@@ -144,7 +218,10 @@ class SecurityFeatureExtractor:
             prns = {p.strip() for p in str(val).split(";") if p.strip()}
             return prns if len(prns) > 0 else None
 
-        valid_df["_prn_set"] = valid_df["satellite_prns"].apply(parse_prn_str)
+        if "satellite_prns" in valid_df.columns:
+            valid_df["_prn_set"] = valid_df["satellite_prns"].apply(parse_prn_str)
+        else:
+            valid_df["_prn_set"] = [None] * len(valid_df)
 
         session_groups = []
         for sid, group in valid_df.groupby("session_id", sort=True):

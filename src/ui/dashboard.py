@@ -2,6 +2,8 @@
 LOCUS Cyber-Physical GNSS Security Operations Center (SOC) — Master Dashboard
 Module: src.ui.dashboard
 Run: streamlit run dashboard.py
+Redefined PDS SOC Architecture with Sidebar Console Navigation,
+Authoritative Canonical Assessment, Live Data Input, and Model Training.
 """
 
 import os
@@ -22,16 +24,20 @@ from src.ui.components.agent_soc_panel import render_agent_soc_panel
 from src.ui.components.rag_panel import render_rag_panel
 from src.ui.components.query_terminal import render_query_terminal
 from src.ui.components.health_panel import render_health_panel
+from src.ui.components.live_data_input import render_live_data_input_panel
+from src.ui.components.model_training_panel import render_model_training_panel
+from src.ui.pages.p_event_workspace import render_event_workspace
+from src.ui.utils.state import get_selected_event, set_selected_event
 
 
-# Set page configuration
+# 1. Set page configuration
 st.set_page_config(
     page_title="LOCUS — GNSS Security Operations Center",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Inject dark cybersecurity stylesheet
+# 2. Inject dark cybersecurity stylesheet
 inject_custom_css()
 
 
@@ -60,31 +66,47 @@ def get_cached_events():
     return service.get_events()
 
 
-@st.cache_data(ttl=60)
-def get_cached_deliberation(event_id: str):
-    return service.deliberate_event(event_id)
-
-
 df_telemetry, df_features, alerts_list, health_matrix = load_cached_datasets()
 
-# Sidebar: Navigation & Event Selection
-st.sidebar.markdown("### LOCUS SOC Command")
-st.sidebar.caption("Autonomous GNSS Threat Detection & Agentic SOC")
-
+# Synchronize Active Forensic Event
 events = get_cached_events()
-event_ids = [e["event_id"] for e in events] if events else ["No Events"]
+event_ids = [e["event_id"] for e in events] if events else ["NO DATA AVAILABLE"]
 
-selected_event_id = st.sidebar.selectbox(
+if "selected_event_id" not in st.session_state:
+    st.session_state["selected_event_id"] = event_ids[0] if event_ids else "NO DATA AVAILABLE"
+
+selected_event_id = st.session_state["selected_event_id"]
+if selected_event_id not in event_ids and event_ids:
+    selected_event_id = event_ids[0]
+    st.session_state["selected_event_id"] = selected_event_id
+
+# ---------------------------------------------------------
+# Sidebar: LOCUS SOC Command & Console View Selector (PDS Bekar Pattern)
+# ---------------------------------------------------------
+st.sidebar.markdown("### LOCUS SOC Command")
+st.sidebar.caption("Autonomous GNSS Cyber-Physical Threat Operations Center")
+
+def _on_sidebar_event_change():
+    chosen = st.session_state.get("sb_event_select")
+    if chosen:
+        st.session_state["selected_event_id"] = chosen
+        set_selected_event(chosen)
+
+selected_idx = event_ids.index(selected_event_id) if selected_event_id in event_ids else 0
+st.sidebar.selectbox(
     "Active Forensic Event:",
     options=event_ids,
-    index=1 if len(event_ids) > 1 else 0
+    index=selected_idx,
+    key="sb_event_select",
+    on_change=_on_sidebar_event_change
 )
 
-# Navigation View Selector
+# Redefined PDS Bekar Console Views
 nav_section = st.sidebar.radio(
     "Security Console Views:",
     options=[
         "Main SOC Overview",
+        "Live Data Input & Analysis",
         "Live GNSS Monitoring",
         "Geospatial Map View",
         "10-D Security Features",
@@ -94,8 +116,11 @@ nav_section = st.sidebar.radio(
         "3-Agent Security SOC",
         "Regulatory RAG",
         "SOC Query Assistant",
-        "System Health"
-    ]
+        "Model Training & Evaluation",
+        "System Health",
+        "Unified Master Workspace"
+    ],
+    index=0
 )
 
 st.sidebar.markdown("---")
@@ -103,23 +128,20 @@ st.sidebar.markdown("##### Pipeline Architecture")
 st.sidebar.markdown("""
 - **Sensor**: 7Semi L89HA Multi-GNSS
 - **Vector**: 10-D Canonical Features
-- **Detectors**: Physical, IF, XGB, LSTM
+- **Detectors**: Rules, IF, XGB*, LSTM
 - **SOC Layer**: 3-Agent Deliberative
-- **Knowledge**: RAG (ICAO, RTCA, CISA, MITRE)
+- **Knowledge**: RAG (ICAO, RTCA, CISA)
 """)
+st.sidebar.caption("*XGBoost un-fitted; awaiting labelled attack profiles.")
 
-# Load active event bundle & deliberation
+# Load active event bundle & Authoritative Canonical Assessment
 active_bundle = service.load_event(selected_event_id)
-if active_bundle:
-    delib = get_cached_deliberation(selected_event_id)
-    current_status = delib.get("current_status", "NOMINAL")
-    defcon_level = delib.get("risk_level", "DEFCON_5")
-    confidence = delib.get("confidence", 1.0)
-else:
-    delib = {}
-    current_status = "NOMINAL"
-    defcon_level = "DEFCON_5"
-    confidence = 1.0
+canonical = service.get_canonical_assessment(selected_event_id, bundle=active_bundle)
+
+current_status = canonical.get("current_status", "NOMINAL")
+defcon_level = canonical.get("defcon_level") or canonical.get("risk_level", "DEFCON_5")
+defcon_display = canonical.get("defcon_display", "DEFCON 5 (NOMINAL)")
+confidence = canonical.get("confidence", 1.0)
 
 api_online, api_status_msg = service.check_backend_status()
 
@@ -131,17 +153,12 @@ render_navbar(
     api_online=api_online
 )
 
-# Waking up / Connectivity status notification (graceful degradation)
+# Backend Status Notice (Graceful Degradation)
 if not api_online:
-    if "waking up" in api_status_msg.lower():
-        st.warning(f"**Backend Notice:** {api_status_msg}")
-    else:
-        st.info(f"**Standalone Mode Active:** FastAPI backend is currently unavailable ({api_status_msg}). Running in local replay mode with verified dataset.")
+    st.info(f"**Standalone Engine Active:** FastAPI backend is currently unavailable ({api_status_msg}). Running in direct local engine mode with verified dataset.")
 
-# Latest Telemetry Metrics for KPI cards
+# 2. Render Main 6 Operational KPI Cards
 tel_metrics = service.get_latest_telemetry_metrics()
-
-# 2. Render Main 6 KPI Cards
 render_kpi_cards(
     telemetry=tel_metrics,
     security_status=current_status,
@@ -152,15 +169,15 @@ render_kpi_cards(
 
 st.markdown("<div style='margin-bottom: 16px;'></div>", unsafe_allow_html=True)
 
-# 3. View Routing
+# 3. View Routing (Redefined PDS Bekar Views)
 if nav_section == "Main SOC Overview":
     st.subheader("Executive Security Overview & Operational Directives")
-    st.caption(f"Active Incident Event: `{selected_event_id}` • Defcon State: `{defcon_level}` • Consensus Confidence: `{confidence*100:.1f}%`")
+    st.caption(f"Active Incident Event: `{selected_event_id}` • Defcon State: `{defcon_display}` • Consensus Confidence: `{confidence*100:.1f}%`")
 
     col_sum, col_dir = st.columns([3, 2])
     with col_sum:
         st.markdown("##### Master SOC Executive Summary")
-        summary_text = delib.get("agent_findings", {}).get("agent_3_master_soc", {}).get("summary", "Consensus verified nominal across all detectors.")
+        summary_text = canonical.get("summary") or "Consensus verified nominal across all detectors."
         st.info(summary_text)
 
         loc = active_bundle.location if active_bundle else {}
@@ -176,7 +193,7 @@ if nav_section == "Main SOC Overview":
 
     with col_dir:
         st.markdown("##### Mandated Mitigation Directives")
-        actions = delib.get("recommended_next_action", ["MAINTAIN_STANDARD_FIX"])
+        actions = canonical.get("recommended_next_action", ["MAINTAIN_STANDARD_FIX"])
         for act in actions:
             st.markdown(f"- **`{act}`**")
 
@@ -188,6 +205,15 @@ if nav_section == "Main SOC Overview":
     with col_feat_preview:
         canonical_feats = service.get_canonical_10d_features(bundle=active_bundle)
         render_features_panel(canonical_feats)
+
+elif nav_section == "Live Data Input & Analysis":
+    def _on_pipeline_finished(res):
+        new_id = res.get("event_id")
+        if new_id:
+            st.session_state["selected_event_id"] = new_id
+            set_selected_event(new_id)
+
+    render_live_data_input_panel(service=service, on_pipeline_complete=_on_pipeline_finished)
 
 elif nav_section == "Live GNSS Monitoring":
     render_telemetry_panel(df_telemetry=df_telemetry, conn_info=conn_info)
@@ -203,29 +229,28 @@ elif nav_section == "Detection & ML Quad":
     bundle_dict = active_bundle.to_dict() if active_bundle else {}
     render_detection_panel(
         bundle_dict=bundle_dict,
-        final_verdict=delib.get("agent_findings", {}).get("agent_3_master_soc")
+        final_verdict=canonical.get("agent_findings", {}).get("agent_3_master_soc")
     )
 
 elif nav_section == "Alert Center":
     clicked_event = render_alert_center(alerts=alerts_list)
     if clicked_event:
-        st.info(f"Viewing selected alert: `{clicked_event}`")
-        alt_bundle = service.load_event(clicked_event)
-        if alt_bundle:
-            render_evidence_panel(alt_bundle)
+        st.session_state["selected_event_id"] = clicked_event
+        set_selected_event(clicked_event)
+        st.rerun()
 
 elif nav_section == "Evidence Bundle":
     if active_bundle:
-        render_evidence_panel(bundle=active_bundle, deliberation_result=delib)
+        render_evidence_panel(bundle=active_bundle, deliberation_result=canonical)
     else:
         st.warning("No active Evidence Bundle selected.")
 
 elif nav_section == "3-Agent Security SOC":
-    agent_findings = delib.get("agent_findings", {})
+    agent_findings = canonical.get("agent_findings", {})
     render_agent_soc_panel(agent_findings=agent_findings)
 
 elif nav_section == "Regulatory RAG":
-    rag_sources = delib.get("rag_sources", [])
+    rag_sources = canonical.get("rag_sources", [])
     render_rag_panel(rag_sources=rag_sources, service=service)
 
 elif nav_section == "SOC Query Assistant":
@@ -235,5 +260,11 @@ elif nav_section == "SOC Query Assistant":
         bundle=active_bundle
     )
 
+elif nav_section == "Model Training & Evaluation":
+    render_model_training_panel(service=service)
+
 elif nav_section == "System Health":
     render_health_panel(health_matrix=health_matrix)
+
+elif nav_section == "Unified Master Workspace":
+    render_event_workspace(data_service=service)

@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_922a57ce9c81",
+  "incident_id": "inc_a9c1ee206be0",
   "event_id": "evt_4_228",
   "timestamp_utc": "2026-09-25T05:05:51.000000Z",
   "session_id": 4,
@@ -45,14 +45,14 @@
     "primary_feature_contributors": [
       "acc_kinematic",
       "jerk_kinematic",
-      "vel_kinematic"
+      "disp_haversine"
     ],
-    "lstm_reconstruction_error": 412.9469,
-    "iforest_anomaly_score": 0.8383,
+    "lstm_reconstruction_error": 217.9962,
+    "iforest_anomaly_score": 0.8772,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 9 consecutive epochs (persistence ratio: 0.90). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=9, WindowRatio=0.90, Convergence=0.67. Sustained temporal drift detected across 9 consecutive epochs (persistence ratio: 0.90). Kinematic trajectory manipulation suspected. | Primary error drivers: acc_kinematic, jerk_kinematic, vel_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=9, WindowRatio=0.90, Convergence=0.67. Sustained temporal drift detected across 9 consecutive epochs (persistence ratio: 0.90). Kinematic trajectory manipulation suspected. | Primary error drivers: acc_kinematic, jerk_kinematic, disp_haversine.",
   "location": {
     "latitude": 23.1044681,
     "longitude": 72.592415,

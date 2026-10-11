@@ -1,0 +1,55 @@
+{
+  "status": "UNAVAILABLE_NO_LABELS",
+  "model_type": "Supervised XGBoost Classifier",
+  "dataset_path": "data/features/locus_security_features.csv",
+  "total_records_examined": 25561,
+  "has_supervised_labels": false,
+  "audit_details": {
+    "has_valid_labels": false,
+    "label_column": null,
+    "reason": "No ground-truth attack or classification label column detected in dataset schema.",
+    "columns_checked": [
+      "attack_label",
+      "label",
+      "is_attack",
+      "scenario_label",
+      "attack_type",
+      "ground_truth",
+      "class",
+      "target"
+    ],
+    "available_columns": [
+      "epoch_id",
+      "session_id",
+      "timestamp_utc",
+      "timestamp_pc",
+      "latitude",
+      "longitude",
+      "altitude_m",
+      "disp_haversine",
+      "vel_kinematic",
+      "acc_kinematic",
+      "jerk_kinematic",
+      "bearing_rate",
+      "HDOP",
+      "VDOP",
+      "fix_integrity",
+      "sat_count_tot",
+      "sat_churn"
+    ]
+  },
+  "data_limitation_explanation": "The primary LOCUS GNSS dataset consists of empirical baseline receiver logs collected from an L89HA module during normal navigation. Because no ground-truth spoofing or jamming attack scenarios are labelled in the dataset, supervised classifiers cannot be trained without fabricating synthetic labels. Unsupervised detectors (Physical Invariants, Spatial Isolation Forest, Temporal Autoencoder) provide active threat detection until verified labelled scenario datasets are supplied.",
+  "canonical_features": [
+    "disp_haversine",
+    "vel_kinematic",
+    "acc_kinematic",
+    "jerk_kinematic",
+    "bearing_rate",
+    "HDOP",
+    "VDOP",
+    "fix_integrity",
+    "sat_count_tot",
+    "sat_churn"
+  ],
+  "timestamp": "2026-10-11T05:23:46.527154+00:00"
+}

@@ -26,6 +26,19 @@ import pandas as pd
 
 DEFAULT_EVIDENCE_DIR = os.path.join("data", "evidence")
 
+OFFICIAL_SECURITY_FEATURES = [
+    "disp_haversine",
+    "vel_kinematic",
+    "acc_kinematic",
+    "jerk_kinematic",
+    "bearing_rate",
+    "HDOP",
+    "VDOP",
+    "fix_integrity",
+    "sat_count_tot",
+    "sat_churn",
+]
+
 
 @dataclass
 class LocationData:
@@ -58,6 +71,11 @@ class EvidenceBundle:
     model_version: str = "locus-production-v5.5"
     model_training_date: str = "2026-10-04"
     feature_schema_version: str = "locus-sec-v2.0-10d"
+    evidence_id: Optional[str] = None
+    evidence_sha256: Optional[str] = None
+    generation_timestamp_utc: Optional[str] = None
+    source: str = "TELEMETRY_STREAM"
+    supporting_observations: List[Any] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
@@ -110,7 +128,7 @@ class EvidenceFusionEngine:
                     break
 
         # 2. XGBoost Detector
-        self.xgb_detector = xgb_detector or XGBoostDetector(model_version="xgb-ready-v1.1")
+        self.xgb_detector = xgb_detector or XGBoostDetector.load_singleton()
 
         # 3. Load Temporal Model (Production -> Tuned -> Baseline)
         if temporal_detector is not None:

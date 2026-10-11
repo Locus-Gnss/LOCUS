@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_ae02edc722fa",
+  "incident_id": "inc_a8cde9c9b67d",
   "event_id": "evt_4_306",
   "timestamp_utc": "2026-09-25T05:07:09.000000Z",
   "session_id": 4,
@@ -34,24 +34,24 @@
     "timestamp_utc": "2026-09-25T05:07:09.000000Z",
     "session_id": 4,
     "epoch_id": 306,
-    "threat_classification": "MULTIPATH_INTERFERENCE",
-    "confidence_score": 0.8,
-    "persistence_count": 0,
-    "persistence_ratio": 0.5333,
-    "detector_convergence": 0.0,
+    "threat_classification": "TRANSIENT_ANOMALY",
+    "confidence_score": 0.82,
+    "persistence_count": 1,
+    "persistence_ratio": 0.4,
+    "detector_convergence": 0.3333,
     "active_detectors_count": 3,
-    "anomalous_detectors_count": 0,
+    "anomalous_detectors_count": 1,
     "primary_feature_contributors": [
-      "bearing_rate",
       "VDOP",
-      "disp_haversine"
+      "sat_count_tot",
+      "vel_kinematic"
     ],
-    "lstm_reconstruction_error": 0.1656,
-    "iforest_anomaly_score": 0.3249,
+    "lstm_reconstruction_error": 0.1684,
+    "iforest_anomaly_score": 0.5193,
     "xgboost_prediction": null,
-    "threat_summary": "Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.53). Consistent with localized multipath."
+    "threat_summary": "Isolated transient anomaly (streak: 1). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=MULTIPATH_INTERFERENCE, PersistenceStreak=0, WindowRatio=0.53, Convergence=0.00. Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.53). Consistent with localized multipath. | Primary error drivers: bearing_rate, VDOP, disp_haversine.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=TRANSIENT_ANOMALY, PersistenceStreak=1, WindowRatio=0.40, Convergence=0.33. Isolated transient anomaly (streak: 1). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact. | Primary error drivers: VDOP, sat_count_tot, vel_kinematic.",
   "location": {
     "latitude": 23.1043554,
     "longitude": 72.592496,

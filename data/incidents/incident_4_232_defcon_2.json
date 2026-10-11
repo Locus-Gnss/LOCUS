@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_5be5ef649fb0",
+  "incident_id": "inc_418e664db779",
   "event_id": "evt_4_232",
   "timestamp_utc": "2026-09-25T05:05:55.000000Z",
   "session_id": 4,
@@ -45,14 +45,14 @@
     "primary_feature_contributors": [
       "jerk_kinematic",
       "acc_kinematic",
-      "disp_haversine"
+      "vel_kinematic"
     ],
-    "lstm_reconstruction_error": 92.788,
-    "iforest_anomaly_score": 0.7845,
+    "lstm_reconstruction_error": 51.4354,
+    "iforest_anomaly_score": 0.887,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 13 consecutive epochs (persistence ratio: 0.93). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=13, WindowRatio=0.93, Convergence=0.67. Sustained temporal drift detected across 13 consecutive epochs (persistence ratio: 0.93). Kinematic trajectory manipulation suspected. | Primary error drivers: jerk_kinematic, acc_kinematic, disp_haversine.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=13, WindowRatio=0.93, Convergence=0.67. Sustained temporal drift detected across 13 consecutive epochs (persistence ratio: 0.93). Kinematic trajectory manipulation suspected. | Primary error drivers: jerk_kinematic, acc_kinematic, vel_kinematic.",
   "location": {
     "latitude": 23.1044325,
     "longitude": 72.5924565,

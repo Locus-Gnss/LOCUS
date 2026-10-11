@@ -88,6 +88,121 @@ class SecurityQueryProcessor:
 
     list_events = list_available_events
 
+    def invalidate_cache(self) -> None:
+        """Clear in-memory cache so newly processed events are loaded immediately."""
+        self._cached_events = None
+        self._bundle_cache.clear()
+
+    def get_canonical_assessment(self, event_id: str, bundle: Optional[EvidenceBundle] = None) -> Dict[str, Any]:
+        """
+        Return the single authoritative canonical assessment for an event.
+        Guarantees identical threat level and status across all UI views and query endpoints.
+        """
+        from datetime import datetime, timezone
+
+        active_bundle = bundle or self.load_event(event_id)
+        if not active_bundle:
+            return {
+                "event_id": event_id,
+                "current_status": "UNKNOWN",
+                "risk_level": "DEFCON_5_NOMINAL",
+                "defcon_level": "DEFCON_5_NOMINAL",
+                "defcon_display": "DEFCON 5 (NOMINAL)",
+                "defcon_badge_class": "badge-normal",
+                "confidence": 0.0,
+                "summary": "No telemetry or evidence bundle available.",
+                "detection_summary": {},
+                "agent_findings": {},
+                "rag_sources": [],
+                "recommended_next_action": ["INGEST_GNSS_EVENT_DATA"]
+            }
+
+        # Check if an incident file already exists in data/incidents
+        inc_dir = os.path.join(os.path.dirname(self.evidence_dir), "incidents")
+        if os.path.isdir(inc_dir):
+            for inc_file in os.listdir(inc_dir):
+                if event_id in inc_file and inc_file.endswith(".json"):
+                    try:
+                        with open(os.path.join(inc_dir, inc_file), "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                            if "current_status" in data and "risk_level" in data:
+                                return data
+                    except Exception:
+                        pass
+
+        # Otherwise synthesize canonical assessment via 3-Agent SOC
+        a1_assessment = self.agent1.assess(active_bundle)
+        a2_assessment = self.agent2.assess(active_bundle)
+        rag_context = self.rag_engine.ground_soc_evidence(
+            bundle=active_bundle,
+            a1_assessment=a1_assessment.to_dict(),
+            a2_assessment=a2_assessment.to_dict()
+        )
+        soc_verdict = self.agent3.deliberate(
+            bundle=active_bundle,
+            integrity_output=a1_assessment,
+            temporal_output=a2_assessment,
+            rag_context=rag_context
+        )
+
+        defcon_map = {
+            "DEFCON_1_CRITICAL": (1, "DEFCON 1 (CRITICAL)", "badge-critical"),
+            "DEFCON_2_HIGH": (2, "DEFCON 2 (HIGH)", "badge-critical"),
+            "DEFCON_3_ELEVATED": (3, "DEFCON 3 (ELEVATED)", "badge-warning"),
+            "DEFCON_4_GUARDED": (4, "DEFCON 4 (GUARDED)", "badge-info"),
+            "DEFCON_5_NOMINAL": (5, "DEFCON 5 (NOMINAL)", "badge-normal"),
+        }
+        defcon_info = defcon_map.get(soc_verdict.risk_level, (4, "DEFCON 4 (GUARDED)", "badge-info"))
+
+        b_dict = active_bundle.to_dict()
+        detector_results = {
+            "physical_rules": b_dict.get("physical_rules", {}),
+            "isolation_forest": b_dict.get("isolation_forest", {}),
+            "xgboost": b_dict.get("xgboost", {}),
+            "temporal_model": b_dict.get("temporal_model", {})
+        }
+
+        rag_sources = []
+        if rag_context.get("is_grounded") and rag_context.get("citations"):
+            for cit in rag_context["citations"]:
+                rag_sources.append({
+                    "document": cit.get("source_document"),
+                    "section": cit.get("section"),
+                    "regulatory_authorities": cit.get("standard_authorities", []),
+                    "similarity": cit.get("similarity")
+                })
+
+        return {
+            "event_id": active_bundle.event_id,
+            "current_status": soc_verdict.status,
+            "risk_level": soc_verdict.risk_level,
+            "defcon_level": soc_verdict.risk_level,
+            "defcon_number": defcon_info[0],
+            "defcon_display": defcon_info[1],
+            "defcon_badge_class": defcon_info[2],
+            "confidence": round(float(soc_verdict.confidence), 4),
+            "summary": soc_verdict.summary,
+            "detection_summary": {
+                name: res.get("actual_result", res.get("status", "NOMINAL"))
+                for name, res in detector_results.items()
+            },
+            "detector_metrics": detector_results,
+            "agent_findings": {
+                "agent_1_integrity": a1_assessment.to_dict(),
+                "agent_2_temporal_threat": a2_assessment.to_dict(),
+                "agent_3_master_soc": {
+                    "status": soc_verdict.status,
+                    "risk_level": soc_verdict.risk_level,
+                    "confidence": soc_verdict.confidence,
+                    "summary": soc_verdict.summary
+                }
+            },
+            "rag_sources": rag_sources,
+            "recommended_next_action": soc_verdict.recommended_next_action,
+            "evidence_references": soc_verdict.evidence,
+            "assessment_timestamp": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+        }
+
     def load_event(self, event_id: str) -> Optional[EvidenceBundle]:
         """
         Retrieve EvidenceBundle by event_id or file name (cached in-memory).

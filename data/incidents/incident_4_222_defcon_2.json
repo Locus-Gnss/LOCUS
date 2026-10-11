@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_36afba6b1aa5",
+  "incident_id": "inc_1c2d0acb756c",
   "event_id": "evt_4_222",
   "timestamp_utc": "2026-09-25T05:05:45.000000Z",
   "session_id": 4,
@@ -44,7 +44,7 @@
     "anomalous_detectors_count": 1,
     "primary_feature_contributors": [],
     "lstm_reconstruction_error": 0.0,
-    "iforest_anomaly_score": 0.7481,
+    "iforest_anomaly_score": 0.866,
     "xgboost_prediction": null,
     "threat_summary": "Persistent anomalous dynamics over 3 consecutive epochs (ratio: 0.75). Multi-detector convergence: 0.50."
   },

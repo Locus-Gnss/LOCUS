@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_ef842eb5d004",
+  "incident_id": "inc_e803d60ef190",
   "event_id": "evt_4_252",
   "timestamp_utc": "2026-09-25T05:06:15.000000Z",
   "session_id": 4,
@@ -39,20 +39,20 @@
     "confidence_score": 0.88,
     "persistence_count": 33,
     "persistence_ratio": 1.0,
-    "detector_convergence": 0.3333,
+    "detector_convergence": 0.6667,
     "active_detectors_count": 3,
-    "anomalous_detectors_count": 1,
+    "anomalous_detectors_count": 2,
     "primary_feature_contributors": [
       "jerk_kinematic",
       "acc_kinematic",
-      "disp_haversine"
+      "vel_kinematic"
     ],
-    "lstm_reconstruction_error": 10.1241,
-    "iforest_anomaly_score": 0.3859,
+    "lstm_reconstruction_error": 5.6375,
+    "iforest_anomaly_score": 0.5991,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 33 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=33, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 33 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: jerk_kinematic, acc_kinematic, disp_haversine.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=33, WindowRatio=1.00, Convergence=0.67. Sustained temporal drift detected across 33 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: jerk_kinematic, acc_kinematic, vel_kinematic.",
   "location": {
     "latitude": 23.1043585,
     "longitude": 72.5925,

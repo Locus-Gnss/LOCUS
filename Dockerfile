@@ -1,31 +1,44 @@
-# LOCUS Cyber-Physical GNSS SOC — Streamlit Dashboard Container
-# Target Deployment: Google Cloud Run / Docker Container Runtime
+# LOCUS Cyber-Physical GNSS SOC — Production Unified Container
+# Target Deployment: Docker / Cloud Run / Kubernetes / Render
 FROM python:3.11-slim
 
-# Enforce clean unbuffered output and prevent bytecode caching
+# Prevent bytecode caching and enable unbuffered output
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8080 \
-    LOCUS_API_URL=https://locus-5b9g.onrender.com
+    PORT=8501 \
+    LOCUS_API_PORT=8000
 
 WORKDIR /app
 
-# Install thin-client frontend dependencies (no heavy backend ML frameworks)
-COPY requirements-gui.txt .
-RUN pip install --no-cache-dir -r requirements-gui.txt
+# Install system dependencies (curl for healthchecks)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Copy application configuration and source code (thin client only)
+# Install application dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application configuration and source code
 COPY .streamlit/ .streamlit/
-COPY dashboard.py .
-COPY src/ui/ src/ui/
 COPY configs/ configs/
+COPY data/ data/
+COPY models/ models/
+COPY src/ src/
+COPY scripts/ scripts/
+COPY dashboard.py .
 
-# Expose Cloud Run default port
-EXPOSE 8080
+# Expose ports for both GUI and FastAPI backend
+EXPOSE 8501
+EXPOSE 8000
 
-# Health check probe using Streamlit's native health endpoint
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD python -c "import urllib.request, os; p = os.getenv('PORT', '8080'); urllib.request.urlopen(f'http://127.0.0.1:{p}/_stcore/health')" || exit 1
+# Health check probe against both FastAPI and Streamlit endpoints
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request, os; \
+p = os.getenv('PORT', '8501'); \
+ap = os.getenv('LOCUS_API_PORT', '8000'); \
+urllib.request.urlopen(f'http://127.0.0.1:{ap}/api/health'); \
+urllib.request.urlopen(f'http://127.0.0.1:{p}/_stcore/health')" || exit 1
 
-# Launch Streamlit with exec so SIGTERM is cleanly handled by the main process
-ENTRYPOINT ["sh", "-c", "exec streamlit run dashboard.py --server.address 0.0.0.0 --server.port ${PORT:-8080} --browser.gatherUsageStats false"]
+# Launch unified orchestration runner (FastAPI + Streamlit GUI)
+ENTRYPOINT ["python", "scripts/run_container.py"]

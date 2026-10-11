@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_75c522b98b5a",
+  "incident_id": "inc_b21849aec930",
   "event_id": "evt_4_291",
   "timestamp_utc": "2026-09-25T05:06:54.000000Z",
   "session_id": 4,
@@ -34,8 +34,8 @@
     "timestamp_utc": "2026-09-25T05:06:54.000000Z",
     "session_id": 4,
     "epoch_id": 291,
-    "threat_classification": "TRANSIENT_ANOMALY",
-    "confidence_score": 0.82,
+    "threat_classification": "MULTIPATH_INTERFERENCE",
+    "confidence_score": 0.8,
     "persistence_count": 1,
     "persistence_ratio": 0.0667,
     "detector_convergence": 0.3333,
@@ -43,15 +43,15 @@
     "anomalous_detectors_count": 1,
     "primary_feature_contributors": [
       "VDOP",
-      "disp_haversine",
-      "vel_kinematic"
+      "fix_integrity",
+      "HDOP"
     ],
-    "lstm_reconstruction_error": 1.2071,
-    "iforest_anomaly_score": 0.3343,
+    "lstm_reconstruction_error": 0.4707,
+    "iforest_anomaly_score": 0.537,
     "xgboost_prediction": null,
-    "threat_summary": "Isolated transient anomaly (streak: 1). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact."
+    "threat_summary": "Transient geometric fluctuation detected (streak: 1, persistence ratio: 0.07). Consistent with localized multipath."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=TRANSIENT_ANOMALY, PersistenceStreak=1, WindowRatio=0.07, Convergence=0.33. Isolated transient anomaly (streak: 1). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact. | Primary error drivers: VDOP, disp_haversine, vel_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=MULTIPATH_INTERFERENCE, PersistenceStreak=1, WindowRatio=0.07, Convergence=0.33. Transient geometric fluctuation detected (streak: 1, persistence ratio: 0.07). Consistent with localized multipath. | Primary error drivers: VDOP, fix_integrity, HDOP.",
   "location": {
     "latitude": 23.1043561,
     "longitude": 72.5924961,

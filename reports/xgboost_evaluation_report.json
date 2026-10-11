@@ -1,0 +1,93 @@
+{
+  "status": "OPERATIONAL",
+  "model_version": "xgb-production-v1.0",
+  "environment": "Controlled Over-the-Air RF Field Experiment",
+  "dataset_path": "data/scenarios/yunnan_attack_scenarios.csv",
+  "dataset_provenance": "Verified Scenario Dataset (yunnan_attack_scenarios.csv, 25145 records)",
+  "total_records": 25145,
+  "train_records": 20042,
+  "val_records": 2085,
+  "test_records": 3018,
+  "class_mapping": {
+    "0": 0,
+    "1": 1
+  },
+  "metrics": {
+    "accuracy": 0.8903,
+    "balanced_accuracy": 0.9279,
+    "precision": 0.9548,
+    "recall": 0.8903,
+    "f1_score": 0.9106,
+    "roc_auc": 0.9734,
+    "pr_auc": 0.9979,
+    "false_positive_rate": 0.0283,
+    "false_negative_rate": 0.1158,
+    "confusion_matrix": [
+      [
+        206,
+        6
+      ],
+      [
+        325,
+        2481
+      ]
+    ],
+    "classification_report": {
+      "0": {
+        "precision": 0.3879472693032015,
+        "recall": 0.9716981132075472,
+        "f1-score": 0.5545087483176312,
+        "support": 212.0
+      },
+      "1": {
+        "precision": 0.9975874547647768,
+        "recall": 0.8841767640769779,
+        "f1-score": 0.9374645758549027,
+        "support": 2806.0
+      },
+      "accuracy": 0.8903247183565275,
+      "macro avg": {
+        "precision": 0.6927673620339891,
+        "recall": 0.9279374386422625,
+        "f1-score": 0.745986662086267,
+        "support": 3018.0
+      },
+      "weighted avg": {
+        "precision": 0.9547631607562104,
+        "recall": 0.8903247183565275,
+        "f1-score": 0.9105637688840936,
+        "support": 3018.0
+      }
+    }
+  },
+  "baseline_comparison": {
+    "baseline_strategy": "most_frequent",
+    "baseline_metrics": {
+      "model_type": "DummyClassifier (Most Frequent Class Baseline)",
+      "accuracy": 0.0702,
+      "balanced_accuracy": 0.5,
+      "precision": 0.0049,
+      "recall": 0.0702,
+      "f1_score": 0.0092
+    },
+    "xgboost_accuracy_lift": 0.8201,
+    "xgboost_f1_lift": 0.9014
+  },
+  "evaluation_disclaimer": "This evaluation was conducted on empirical multi-GNSS receiver logs collected in a controlled over-the-air RF field experiment at Yunnan University using HackRF One SDR spoofing and commercial suppression jamming. High detection accuracy under controlled experimental conditions demonstrates feature sensitivity but does not guarantee equivalent field performance against advanced polymorphic, multi-element antenna, or carrier-phase aligned spoofing attacks in complex operational environments.",
+  "feature_importances": {
+    "disp_haversine": 0.034996356815099716,
+    "vel_kinematic": 0.04520309343934059,
+    "acc_kinematic": 0.01435708999633789,
+    "jerk_kinematic": 0.01483616791665554,
+    "bearing_rate": 0.0,
+    "HDOP": 0.05063744634389877,
+    "VDOP": 0.08248839527368546,
+    "fix_integrity": 0.49955683946609497,
+    "sat_count_tot": 0.1532599925994873,
+    "sat_churn": 0.1046646237373352
+  },
+  "model_artifact": "models/production/xgboost/xgboost_detector.joblib",
+  "importance_artifact": "models/production/xgboost/xgboost_feature_importance.json",
+  "metadata_artifact": "models/production/xgboost/xgboost_metadata.json",
+  "trained_at": "2026-10-10T17:16:23.846750+00:00"
+}

@@ -66,24 +66,60 @@ def partition_security_dataset(
         DatasetSplits containing partitioned DataFrames, and fitted train-only imputer & scaler.
     """
     sec_features = features or list(OFFICIAL_SECURITY_FEATURES)
-    df = pd.read_csv(features_csv)
+    if isinstance(features_csv, pd.DataFrame):
+        df = features_csv.copy()
+    else:
+        df = pd.read_csv(features_csv)
 
-    # 1. Train partition: Sessions 4, 5, 9, 10
-    train_mask = df["session_id"].isin([4, 5, 9, 10])
-    train_df = df[train_mask].copy().reset_index(drop=True)
+    # Check if canonical sessions exist in this dataset
+    canonical_sessions = {4, 5, 9, 10, 11, 15}
+    actual_sessions = set(df["session_id"].unique()) if "session_id" in df.columns else set()
 
-    # 2. Validation partition: Session 11 + first part of Session 15
-    sess11 = df[df["session_id"] == 11].copy()
-    sess15 = df[df["session_id"] == 15].copy().sort_values("timestamp_pc").reset_index(drop=True)
+    if canonical_sessions.issubset(actual_sessions):
+        # 1. Canonical Train partition: Sessions 4, 5, 9, 10
+        train_mask = df["session_id"].isin([4, 5, 9, 10])
+        train_df = df[train_mask].copy().reset_index(drop=True)
 
-    sess15_val_cutoff = 2270
-    sess15_test_start = sess15_val_cutoff + buffer_epochs  # 2300
+        # 2. Canonical Validation partition: Session 11 + first part of Session 15
+        sess11 = df[df["session_id"] == 11].copy()
+        sess15 = df[df["session_id"] == 15].copy().sort_values("timestamp_pc" if "timestamp_pc" in df.columns else df.columns[0]).reset_index(drop=True)
 
-    sess15_val = sess15.iloc[:sess15_val_cutoff].copy()
-    val_df = pd.concat([sess11, sess15_val], ignore_index=True)
+        sess15_val_cutoff = min(2270, len(sess15) // 2)
+        sess15_test_start = min(len(sess15), sess15_val_cutoff + buffer_epochs)
 
-    # 3. Test partition: Remaining part of Session 15 after buffer
-    test_df = sess15.iloc[sess15_test_start:].copy().reset_index(drop=True)
+        sess15_val = sess15.iloc[:sess15_val_cutoff].copy()
+        val_df = pd.concat([sess11, sess15_val], ignore_index=True)
+
+        # 3. Canonical Test partition: Remaining part of Session 15 after buffer
+        test_df = sess15.iloc[sess15_test_start:].copy().reset_index(drop=True)
+    else:
+        # Dynamic chronological session partitioning for new/extended datasets
+        unique_sessions = sorted(df["session_id"].unique()) if "session_id" in df.columns else [1]
+        if len(unique_sessions) >= 3:
+            n_sess = len(unique_sessions)
+            n_train = max(1, int(n_sess * 0.6))
+            n_val = max(1, int(n_sess * 0.2))
+            train_s = unique_sessions[:n_train]
+            val_s = unique_sessions[n_train:n_train + n_val]
+            test_s = unique_sessions[n_train + n_val:]
+            if not test_s:
+                test_s = [val_s.pop()] if len(val_s) > 1 else [train_s[-1]]
+
+            train_df = df[df["session_id"].isin(train_s)].copy().reset_index(drop=True)
+            val_df = df[df["session_id"].isin(val_s)].copy().reset_index(drop=True)
+            test_df = df[df["session_id"].isin(test_s)].copy().reset_index(drop=True)
+        else:
+            # Chronological row index split with buffer gap to prevent leakage
+            n = len(df)
+            n_train = int(n * 0.60)
+            n_val = int(n * 0.20)
+            train_df = df.iloc[:n_train].copy().reset_index(drop=True)
+            val_end = min(n, n_train + n_val)
+            val_df = df.iloc[n_train:val_end].copy().reset_index(drop=True)
+            test_start = min(n, val_end + buffer_epochs)
+            test_df = df.iloc[test_start:].copy().reset_index(drop=True)
+            if len(test_df) == 0 and len(val_df) > buffer_epochs:
+                test_df = val_df.iloc[-buffer_epochs:].copy().reset_index(drop=True)
 
     # 4. Strict Preprocessor fitting: fit ONLY on train_df
     imputer = SimpleImputer(strategy="median", fill_value=0.0)

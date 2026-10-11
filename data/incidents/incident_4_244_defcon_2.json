@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_46e02f75674f",
+  "incident_id": "inc_3b57d176f10e",
   "event_id": "evt_4_244",
   "timestamp_utc": "2026-09-25T05:06:07.000000Z",
   "session_id": 4,
@@ -47,8 +47,8 @@
       "jerk_kinematic",
       "disp_haversine"
     ],
-    "lstm_reconstruction_error": 26.1946,
-    "iforest_anomaly_score": 0.5843,
+    "lstm_reconstruction_error": 14.8876,
+    "iforest_anomaly_score": 0.7622,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 25 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected."
   },

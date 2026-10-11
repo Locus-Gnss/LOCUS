@@ -76,6 +76,10 @@ class TemporalThreatAgent:
             self._history_buffers.clear()
             self._current_streak.clear()
 
+    def analyze(self, *args, **kwargs) -> TemporalAssessment:
+        """Alias for assess."""
+        return self.assess(*args, **kwargs)
+
     def assess(
         self,
         bundle: Union[EvidenceBundle, Dict[str, Any]],

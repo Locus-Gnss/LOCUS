@@ -1,0 +1,195 @@
+{
+  "dataset_name": "Yunnan University GNSS Interference & Spoofing Scenario Dataset",
+  "provenance": {
+    "source": "Mendeley Data",
+    "doi": "10.17632/nxk9r22wd6.1",
+    "publication": "Wang et al., 'GNSS interference and spoofing dataset', Data in Brief 54 (2024) 110302",
+    "pmcid": "PMC11220923",
+    "license": "CC BY 4.0",
+    "institution": "Yunnan University, Kunming, China",
+    "collection_date": "2023-12-21",
+    "receiver_platform": "u-blox Multi-GNSS Sensor (GPS, Galileo, BeiDou, QZSS, GLONASS)",
+    "sampling_rate_hz": 1.0
+  },
+  "verified_raw_artifacts": [
+    {
+      "hour": 12,
+      "type": "pvt",
+      "filename": "pvtSolution12.json",
+      "id": "b81683d3-a25c-469a-bcac-fa12ca39590e",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution12.json",
+      "size": 1339974,
+      "sha256": "d26784ec04a4b2da30a8cdf5fa07389785327c417c330ecf5429f0df89dae029"
+    },
+    {
+      "hour": 12,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation12.json",
+      "id": "1cc65387-0ae5-4de0-b86f-2721d26e5d1e",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation12.json",
+      "size": 64357207,
+      "sha256": "8ba7eeebd44b225761f27847487d90dd1286e8a0e9108244dbd05e1fa1e0bfd1"
+    },
+    {
+      "hour": 13,
+      "type": "pvt",
+      "filename": "pvtSolution13.json",
+      "id": "32be3f4e-1c39-44e5-be10-8c22d1c69ba2",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution13.json",
+      "size": 1341632,
+      "sha256": "4da110d1f192a869d4b6875a6526a5186c828b7166f59c6c0ddee9ede4507921"
+    },
+    {
+      "hour": 13,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation13.json",
+      "id": "5cc4dd4f-1587-4fd1-97fd-eb7c80315804",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation13.json",
+      "size": 64365504,
+      "sha256": "1489c73b3e8229b23cb82c0c92d8227bff7106f2f78258cf5940279083229a42"
+    },
+    {
+      "hour": 14,
+      "type": "pvt",
+      "filename": "pvtSolution14.json",
+      "id": "220ab731-232e-4e48-9c9b-6cee080a8bc1",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution14.json",
+      "size": 1344207,
+      "sha256": "4edb282b5d39c128dfacee1287e3d7964535bb2c87ee4c75a5bdb2bbcd70686f"
+    },
+    {
+      "hour": 14,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation14.json",
+      "id": "a364e28d-af3d-4a1a-831b-86df3cdc17c1",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation14.json",
+      "size": 64359422,
+      "sha256": "9cc29b872ad7fe5b2169a10da963b0ae6349607eae225e7885c085e1fe5e5e3b"
+    },
+    {
+      "hour": 15,
+      "type": "pvt",
+      "filename": "pvtSolution15.json",
+      "id": "61193bc4-f21a-4cf1-8ae1-16596c80d3b0",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution15.json",
+      "size": 1341967,
+      "sha256": "b755d8216bef16daf9999a113b9a3340339a0040f5bc35d9af44dd35f51ec276"
+    },
+    {
+      "hour": 15,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation15.json",
+      "id": "fd95cff4-d370-46b3-ae90-5d50d864cd9f",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation15.json",
+      "size": 64383433,
+      "sha256": "3200af6361d540310e08d66b5ccf126880dfb05111cf02a12fdac882a28db6ec"
+    },
+    {
+      "hour": 16,
+      "type": "pvt",
+      "filename": "pvtSolution16.json",
+      "id": "c142420c-5e83-4122-8646-fd2d2ba16ae0",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution16.json",
+      "size": 1340923,
+      "sha256": "38f67a2e2ebf963877e2033a8e0c85206dd534a61181ee2a89618690ffb01927"
+    },
+    {
+      "hour": 16,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation16.json",
+      "id": "230d09e7-5eef-4dc4-bcfe-1f9eea961f7e",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation16.json",
+      "size": 64402672,
+      "sha256": "fca7ef3f2b30d4bf6ac246da4c5d3602a421e1aec554ffcb4cffcdeefb72a937"
+    },
+    {
+      "hour": 17,
+      "type": "pvt",
+      "filename": "pvtSolution17.json",
+      "id": "9b6692c7-c0bf-4c9a-bf92-84f5dee9acfe",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution17.json",
+      "size": 1331795,
+      "sha256": "8f9198d99c30f87b722a685431cc0f980e5a8312b33abcafb79a39c3a3350c1c"
+    },
+    {
+      "hour": 17,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation17.json",
+      "id": "36d0c150-d933-4bda-87fe-a67a8b404519",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation17.json",
+      "size": 64398901,
+      "sha256": "a186db77e80ec6e7eb68700c67206af19e805801446aa8359f224993f70c716c"
+    },
+    {
+      "hour": 18,
+      "type": "pvt",
+      "filename": "pvtSolution18.json",
+      "id": "e1b5d8f1-0b6b-4334-aed1-15b179906117",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\pvtSolution18.json",
+      "size": 1317729,
+      "sha256": "2b33cf51ee6b5c731297ea40284359d9aad9bf893b9a66e9029236d113fc9ad4"
+    },
+    {
+      "hour": 18,
+      "type": "satellite_info",
+      "filename": "satelliteInfomation18.json",
+      "id": "64577493-dba3-4ad5-b6d9-21bee8af17d7",
+      "local_path": "data/scenarios/raw_sources/yunnan_mendeley\\satelliteInfomation18.json",
+      "size": 62950281,
+      "sha256": "c16f592b3e996c2f1d1e3621966466ba29b9ccaeda92dfbd7d61008d0bcc990d"
+    }
+  ],
+  "alignment_rules": {
+    "authority": "Data in Brief 54 (2024) 110302, Table 13 (Spoofing and jamming attacks log)",
+    "spoofing_trials_count": 23,
+    "jamming_trials_count": 10,
+    "nominal_blocks_count": 33,
+    "target_classes": {
+      "0": "nominal (authentic receiver reception)",
+      "1": "attack (HackRF One SDR spoofing or commercial suppression jamming)"
+    }
+  },
+  "canonical_features": [
+    "disp_haversine",
+    "vel_kinematic",
+    "acc_kinematic",
+    "jerk_kinematic",
+    "bearing_rate",
+    "HDOP",
+    "VDOP",
+    "fix_integrity",
+    "sat_count_tot",
+    "sat_churn"
+  ],
+  "dataset_statistics": {
+    "total_records": 25145,
+    "class_distribution": {
+      "0": 15956,
+      "1": 9189
+    },
+    "attack_type_distribution": {
+      "nominal": 15956,
+      "spoofing": 8573,
+      "jamming": 616
+    },
+    "scenario_count": 66,
+    "missing_values": {
+      "disp_haversine": 0,
+      "vel_kinematic": 0,
+      "acc_kinematic": 0,
+      "jerk_kinematic": 0,
+      "bearing_rate": 0,
+      "HDOP": 0,
+      "VDOP": 0,
+      "fix_integrity": 0,
+      "sat_count_tot": 0,
+      "sat_churn": 0
+    }
+  },
+  "exported_csv": {
+    "path": "data/scenarios/yunnan_attack_scenarios.csv",
+    "sha256": "0bd95cc7770997e00b54138e61787786e24a2d36d22ae8c378c6fab10c2c1c6a",
+    "size_bytes": 4951309
+  },
+  "generated_at": "2026-10-10T17:14:10.105110+00:00"
+}

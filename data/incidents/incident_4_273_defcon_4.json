@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_ea8598fcd004",
+  "incident_id": "inc_2b1e107c58ce",
   "event_id": "evt_4_273",
   "timestamp_utc": "2026-09-25T05:06:36.000000Z",
   "session_id": 4,
@@ -37,21 +37,21 @@
     "threat_classification": "TRANSIENT_ANOMALY",
     "confidence_score": 0.82,
     "persistence_count": 0,
-    "persistence_ratio": 0.8667,
+    "persistence_ratio": 0.6,
     "detector_convergence": 0.0,
     "active_detectors_count": 3,
     "anomalous_detectors_count": 0,
     "primary_feature_contributors": [
       "acc_kinematic",
       "jerk_kinematic",
-      "vel_kinematic"
+      "disp_haversine"
     ],
-    "lstm_reconstruction_error": 0.7714,
-    "iforest_anomaly_score": 0.0987,
+    "lstm_reconstruction_error": 0.4078,
+    "iforest_anomaly_score": 0.1575,
     "xgboost_prediction": null,
     "threat_summary": "Isolated transient anomaly (streak: 0). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=TRANSIENT_ANOMALY, PersistenceStreak=0, WindowRatio=0.87, Convergence=0.00. Isolated transient anomaly (streak: 0). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact. | Primary error drivers: acc_kinematic, jerk_kinematic, vel_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=TRANSIENT_ANOMALY, PersistenceStreak=0, WindowRatio=0.60, Convergence=0.00. Isolated transient anomaly (streak: 0). Non-persistent detector trigger; probable receiver jitter or brief measurement artifact. | Primary error drivers: acc_kinematic, jerk_kinematic, disp_haversine.",
   "location": {
     "latitude": 23.1043583,
     "longitude": 72.5924967,

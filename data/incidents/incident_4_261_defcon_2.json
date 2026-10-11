@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_6f36b65af6f2",
+  "incident_id": "inc_1cc49528f154",
   "event_id": "evt_4_261",
   "timestamp_utc": "2026-09-25T05:06:24.000000Z",
   "session_id": 4,
@@ -45,14 +45,14 @@
     "primary_feature_contributors": [
       "bearing_rate",
       "acc_kinematic",
-      "jerk_kinematic"
+      "disp_haversine"
     ],
-    "lstm_reconstruction_error": 7.4336,
-    "iforest_anomaly_score": 0.215,
+    "lstm_reconstruction_error": 11.7395,
+    "iforest_anomaly_score": 0.3724,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 42 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=42, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 42 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: bearing_rate, acc_kinematic, jerk_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=42, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 42 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: bearing_rate, acc_kinematic, disp_haversine.",
   "location": {
     "latitude": 23.1043604,
     "longitude": 72.592498,

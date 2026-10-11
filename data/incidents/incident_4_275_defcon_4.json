@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_edc48aa3faaf",
+  "incident_id": "inc_7b84b35aa645",
   "event_id": "evt_4_275",
   "timestamp_utc": "2026-09-25T05:06:38.000000Z",
   "session_id": 4,
@@ -37,21 +37,21 @@
     "threat_classification": "MULTIPATH_INTERFERENCE",
     "confidence_score": 0.8,
     "persistence_count": 0,
-    "persistence_ratio": 0.7333,
+    "persistence_ratio": 0.4667,
     "detector_convergence": 0.0,
     "active_detectors_count": 3,
     "anomalous_detectors_count": 0,
     "primary_feature_contributors": [
       "jerk_kinematic",
-      "acc_kinematic",
-      "HDOP"
+      "HDOP",
+      "acc_kinematic"
     ],
-    "lstm_reconstruction_error": 0.2383,
-    "iforest_anomaly_score": 0.0917,
+    "lstm_reconstruction_error": 0.1375,
+    "iforest_anomaly_score": 0.1756,
     "xgboost_prediction": null,
-    "threat_summary": "Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.73). Consistent with localized multipath."
+    "threat_summary": "Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.47). Consistent with localized multipath."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=MULTIPATH_INTERFERENCE, PersistenceStreak=0, WindowRatio=0.73, Convergence=0.00. Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.73). Consistent with localized multipath. | Primary error drivers: jerk_kinematic, acc_kinematic, HDOP.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_4 (MULTIPATH_INTERFERENCE) with confidence 82.0%. | Consensus Status: MAJORITY. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=MULTIPATH_INTERFERENCE, PersistenceStreak=0, WindowRatio=0.47, Convergence=0.00. Transient geometric fluctuation detected (streak: 0, persistence ratio: 0.47). Consistent with localized multipath. | Primary error drivers: jerk_kinematic, HDOP, acc_kinematic.",
   "location": {
     "latitude": 23.1043579,
     "longitude": 72.5924965,

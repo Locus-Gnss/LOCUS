@@ -1,3 +1,12 @@
 {
-  "note": "Pending labelled scenario data"
+  "disp_haversine": 0.034996356815099716,
+  "vel_kinematic": 0.04520309343934059,
+  "acc_kinematic": 0.01435708999633789,
+  "jerk_kinematic": 0.01483616791665554,
+  "bearing_rate": 0.0,
+  "HDOP": 0.05063744634389877,
+  "VDOP": 0.08248839527368546,
+  "fix_integrity": 0.49955683946609497,
+  "sat_count_tot": 0.1532599925994873,
+  "sat_churn": 0.1046646237373352
 }

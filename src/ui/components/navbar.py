@@ -18,15 +18,24 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
     source_text = conn_info.get("source", "Recorded L89HA Session")
     hw_status = conn_info.get("hardware_status", "Not Connected")
 
-    col_title, col_meta = st.columns([3, 2])
+    # Threat color badge
+    defcon_clean = str(defcon_level).upper().replace("_", " ")
+    if "DEFCON 1" in defcon_clean or "DEFCON 2" in defcon_clean or "CRITICAL" in defcon_clean:
+        threat_badge = "badge-critical"
+    elif "DEFCON 3" in defcon_clean or "DEFCON 4" in defcon_clean or "WARNING" in defcon_clean:
+        threat_badge = "badge-warning"
+    else:
+        threat_badge = "badge-normal"
+
+    col_title, col_meta = st.columns([3, 3])
 
     with col_title:
         st.markdown(
             """
             <div style='display: flex; align-items: baseline; gap: 12px;'>
-                <span style='font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #38bdf8;'>LOCUS</span>
-                <span style='font-size: 16px; font-weight: 600; color: #cbd5e1;'>GNSS Security Operations Center</span>
-                <span class='badge-info'>v1.1 SOC</span>
+                <span style='font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #00f2fe;'>[SHIELD] LOCUS</span>
+                <span style='font-size: 16px; font-weight: 600; color: #cbd5e1;'>GNSS Cyber-Physical Security Operations Center</span>
+                <span class='badge-info'>v5.5 SOC</span>
             </div>
             """,
             unsafe_allow_html=True
@@ -34,7 +43,9 @@ def render_navbar(conn_info: dict, system_status: str = "OPERATIONAL", defcon_le
         st.caption("Live Observation, Cybersecurity & Unified Security for GNSS | 3-Agent SOC & Regulatory RAG")
 
     with col_meta:
-        c1, c2, c3, c4 = st.columns(4)
+        c0, c1, c2, c3, c4 = st.columns(5)
+        with c0:
+            st.markdown(f"**Threat Level**<br/><span class='{threat_badge}'>● {defcon_clean}</span>", unsafe_allow_html=True)
         with c1:
             st.markdown(f"**System**<br/><span class='badge-normal'>● {system_status}</span>", unsafe_allow_html=True)
         with c2:

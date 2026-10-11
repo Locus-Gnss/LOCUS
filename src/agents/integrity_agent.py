@@ -105,6 +105,10 @@ class GNSSIntegrityAgent:
         except (ValueError, TypeError):
             return None
 
+    def analyze(self, *args, **kwargs) -> IntegrityAssessment:
+        """Alias for assess."""
+        return self.assess(*args, **kwargs)
+
     def assess(
         self,
         bundle_or_features: Union[EvidenceBundle, Dict[str, Any]],

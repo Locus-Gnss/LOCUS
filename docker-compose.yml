@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  # LOCUS SOC Unified Service (FastAPI Backend + Streamlit Dashboard GUI)
+  locus-soc:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: locus_soc_app
+    ports:
+      - "8501:8501"   # Streamlit SOC Dashboard GUI
+      - "8000:8000"   # FastAPI REST API Backend
+    environment:
+      - PORT=8501
+      - LOCUS_API_PORT=8000
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/health && curl -f http://localhost:8501/_stcore/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s

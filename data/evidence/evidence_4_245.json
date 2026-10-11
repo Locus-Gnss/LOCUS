@@ -41,7 +41,7 @@
         "rule_id": "PR_JERK_001",
         "feature": "jerk_kinematic",
         "observed_value": -0.4050018434437754,
-        "threshold": 12.0,
+        "threshold": 15.0,
         "triggered": false,
         "severity": "INFO",
         "explanation": "Jerk (-0.41 m/s\u00b3) is within plausible physical limits."
@@ -95,7 +95,7 @@
         "rule_id": "PR_INT_001",
         "feature": "fix_integrity",
         "observed_value": 0.5687420515695069,
-        "threshold": 0.5,
+        "threshold": 0.45,
         "triggered": false,
         "severity": "INFO",
         "explanation": "Fix integrity (0.57) is healthy."
@@ -112,10 +112,10 @@
     ]
   },
   "isolation_forest": {
-    "is_anomaly": false,
-    "anomaly_score": 0.4511,
-    "raw_score": -0.6254,
-    "decision_offset": -0.6384,
+    "is_anomaly": true,
+    "anomaly_score": 0.657,
+    "raw_score": -0.6582,
+    "decision_offset": -0.6148,
     "model_version": "iforest-v1.0"
   },
   "xgboost": {
@@ -129,20 +129,20 @@
   "temporal_model": {
     "status": "INFERRED",
     "is_anomaly": true,
-    "reconstruction_error": 21.6821,
+    "reconstruction_error": 12.0267,
     "temporal_anomaly_score": 1.0,
-    "error_threshold": 0.7993,
+    "error_threshold": 2.1813,
     "feature_errors": {
-      "disp_haversine": 25.488,
-      "vel_kinematic": 25.4134,
-      "acc_kinematic": 73.5428,
-      "jerk_kinematic": 87.2154,
-      "bearing_rate": 3.8157,
-      "HDOP": 0.6391,
-      "VDOP": 0.2681,
-      "fix_integrity": 0.0814,
-      "sat_count_tot": 0.3568,
-      "sat_churn": 0.0001
+      "disp_haversine": 20.7878,
+      "vel_kinematic": 20.4906,
+      "acc_kinematic": 33.2486,
+      "jerk_kinematic": 40.6126,
+      "bearing_rate": 3.0418,
+      "HDOP": 0.6457,
+      "VDOP": 0.5129,
+      "fix_integrity": 0.7905,
+      "sat_count_tot": 0.1361,
+      "sat_churn": 0.0
     },
     "model_version": "lstm-temporal-v1.0"
   },
@@ -155,9 +155,18 @@
     "data_quality_flag": "VALID|PRN_UNAVAILABLE"
   },
   "model_versions": {
-    "physical_rules_version": "prules-v1.0",
+    "physical_rules_version": "prules-v1.1",
     "isolation_forest_version": "iforest-v1.0",
     "xgboost_version": "xgb-v1.0",
-    "temporal_model_version": "lstm-temporal-v1.0"
-  }
+    "temporal_model_version": "lstm-temporal-v1.0",
+    "pipeline_tier": "PRODUCTION"
+  },
+  "model_version": "locus-production-v5.5",
+  "model_training_date": "2026-10-04",
+  "feature_schema_version": "locus-sec-v2.0-10d",
+  "evidence_id": null,
+  "evidence_sha256": null,
+  "generation_timestamp_utc": null,
+  "source": "TELEMETRY_STREAM",
+  "supporting_observations": []
 }

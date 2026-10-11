@@ -1,5 +1,5 @@
 {
-  "incident_id": "inc_71b78b2d6259",
+  "incident_id": "inc_37c9ab753091",
   "event_id": "evt_4_266",
   "timestamp_utc": "2026-09-25T05:06:29.000000Z",
   "session_id": 4,
@@ -44,15 +44,15 @@
     "anomalous_detectors_count": 1,
     "primary_feature_contributors": [
       "bearing_rate",
-      "acc_kinematic",
-      "jerk_kinematic"
+      "HDOP",
+      "acc_kinematic"
     ],
-    "lstm_reconstruction_error": 9.2421,
-    "iforest_anomaly_score": 0.1005,
+    "lstm_reconstruction_error": 40.4199,
+    "iforest_anomaly_score": 0.2058,
     "xgboost_prediction": null,
     "threat_summary": "Sustained temporal drift detected across 47 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected."
   },
-  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=47, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 47 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: bearing_rate, acc_kinematic, jerk_kinematic.",
+  "orchestrator_rationale": "Master SOC assigned threat level DEFCON_2 (SUBTLE_SPOOFING_WALKOFF) with confidence 86.0%. | Consensus Status: DISCREPANCY_FLAGGED. | Agent 1 (Integrity): Status=INTEGRITY_NOMINAL, KinematicHealth=1.00, GeometryHealth=1.00. NOMINAL: Kinematics and constellation geometry strictly conform to physical laws. | Agent 2 (Temporal): Classification=SPOOFING_TRAJECTORY_INJECTION, PersistenceStreak=47, WindowRatio=1.00, Convergence=0.33. Sustained temporal drift detected across 47 consecutive epochs (persistence ratio: 1.00). Kinematic trajectory manipulation suspected. | Primary error drivers: bearing_rate, HDOP, acc_kinematic.",
   "location": {
     "latitude": 23.1043587,
     "longitude": 72.5924973,

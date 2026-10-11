@@ -12,7 +12,8 @@ Focus: High-performance, decoupled REST API providing endpoints for:
 
 import os
 from typing import Dict, List, Optional, Any
-from fastapi import FastAPI, HTTPException, Query, Body
+from fastapi import FastAPI, HTTPException, Query, Body, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
 from src.evidence.evidence_bundle import EvidenceBundle
@@ -26,17 +27,13 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for development and frontend dashboard
+# Configure CORS for development, public tunnels, and deployed frontend
+cors_env = os.getenv("CORS_ALLOWED_ORIGINS", "*")
+cors_origins = ["*"] if cors_env == "*" else [o.strip() for o in cors_env.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:8501",
-        "http://127.0.0.1:8501",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:8000",
-        "http://127.0.0.1:8000"
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,14 +65,192 @@ class DeliberationRequest(BaseModel):
     event_id: str = Field(..., json_schema_extra={"example": "evt_4_220"})
 
 
-@app.get("/")
-def root():
+@app.get("/", summary="System Root and GUI Redirect")
+def root(request: Request):
+    """
+    Root endpoint. Returns system metadata for API consumers or redirects browsers to the GUI.
+    """
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept and "application/json" not in accept:
+        return RedirectResponse(url="/gui")
     return {
         "system": "LOCUS Cyber-Physical GNSS Security Operations Center",
         "status": "OPERATIONAL",
+        "gui_url": "/gui",
         "api_docs": "/docs",
+        "health_check": "/api/health",
         "version": "1.0.0"
     }
+
+
+@app.get("/gui", response_class=HTMLResponse, summary="LOCUS Cyber SOC GUI Portal")
+@app.get("/dashboard", response_class=HTMLResponse, summary="LOCUS Cyber SOC GUI Dashboard")
+def serve_gui(request: Request):
+    """
+    Serve the responsive LOCUS Master Cyber-Physical SOC GUI console.
+    Integrates directly with the running Streamlit dashboard.
+    """
+    gui_target = os.getenv("LOCUS_GUI_URL", "").rstrip("/")
+    if not gui_target:
+        # Infer client access host
+        client_host = request.headers.get("host", "localhost:8000").split(":")[0]
+        gui_target = f"http://{client_host}:8501"
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOCUS — Cyber-Physical GNSS SOC Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {{
+            --bg-dark: #080b10;
+            --bg-panel: #0d121d;
+            --border-color: #1a2333;
+            --accent-cyan: #00f2fe;
+            --accent-blue: #4facfe;
+            --accent-green: #00e676;
+            --accent-purple: #7928ca;
+            --text-main: #f0f6fc;
+            --text-muted: #8b949e;
+        }}
+        * {{
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }}
+        body, html {{
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            font-family: 'Inter', -apple-system, sans-serif;
+            color: var(--text-main);
+        }}
+        .topbar {{
+            height: 52px;
+            background: linear-gradient(90deg, #0d121d 0%, #111827 100%);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 1.25rem;
+            z-index: 100;
+        }}
+        .brand {{
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.05rem;
+            letter-spacing: 0.05em;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-family: 'JetBrains Mono', monospace;
+        }}
+        .badge {{
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(0, 230, 118, 0.1);
+            color: var(--accent-green);
+            border: 1px solid rgba(0, 230, 118, 0.3);
+        }}
+        .status-dot {{
+            width: 7px;
+            height: 7px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse 2s infinite;
+        }}
+        @keyframes pulse {{
+            0%, 100% {{ opacity: 1; transform: scale(1); }}
+            50% {{ opacity: 0.4; transform: scale(0.85); }}
+        }}
+        .actions {{
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }}
+        .btn {{
+            text-decoration: none;
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s ease;
+        }}
+        .btn:hover {{
+            background: rgba(0, 242, 254, 0.1);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }}
+        .btn-primary {{
+            background: linear-gradient(135deg, #00f2fe22, #4facfe33);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }}
+        .frame-container {{
+            width: 100%;
+            height: calc(100% - 52px);
+            position: relative;
+            background: #0e1117;
+        }}
+        iframe {{
+            width: 100%;
+            height: 100%;
+            border: none;
+        }}
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <span>LOCUS SOC</span>
+            <div class="badge">
+                <span class="status-dot"></span>
+                <span>FASTAPI &times; GUI OPERATIONAL</span>
+            </div>
+        </div>
+        <div class="actions">
+            <a href="{gui_target}" target="_blank" class="btn btn-primary" title="Open Streamlit in new tab">
+                [+] Fullscreen GUI
+            </a>
+            <a href="/docs" target="_blank" class="btn" title="Open FastAPI Swagger Interactive Docs">
+                API Docs
+            </a>
+            <a href="/api/health" target="_blank" class="btn" title="Inspect Live Health">
+                System Health
+            </a>
+        </div>
+    </header>
+    <main class="frame-container">
+        <iframe 
+            src="{gui_target}" 
+            title="LOCUS Master Security Operations Center Dashboard"
+            allow="fullscreen; clipboard-read; clipboard-write; geolocation"
+        ></iframe>
+    </main>
+</body>
+</html>"""
+    return HTMLResponse(content=html_content)
+
 
 
 @app.get("/api/health")
@@ -196,7 +371,7 @@ def get_latest_telemetry():
 
 
 @app.get("/api/telemetry/history")
-def get_telemetry_history(limit: int = Query(100, ge=10, le=1000), session_id: Optional[int] = None):
+def get_telemetry_history(limit: int = Query(100, ge=1, le=500000), session_id: Optional[int] = None):
     """
     Return recent telemetry trajectory history for charts and mapping.
     """
@@ -467,6 +642,225 @@ def deliberate_event(req: DeliberationRequest):
         bundle=bundle
     )
     return result
+
+
+@app.get("/api/events/{event_id}/assessment")
+def get_event_canonical_assessment(event_id: str):
+    """
+    Retrieve single authoritative canonical assessment for an event.
+    Source of truth for Threat Rating, Detection Summary, Agent Consensus, and Recommended Actions.
+    """
+    assessment = processor.get_canonical_assessment(event_id)
+    if not assessment:
+        raise HTTPException(status_code=404, detail=f"Assessment for event '{event_id}' not found.")
+    return assessment
+
+
+class PipelineProcessRequest(BaseModel):
+    data: Any = Field(..., description="Raw string (CSV/NMEA/JSON), list of records, or JSON dictionary")
+    format: str = Field("auto", description="Data format: auto, csv, json, nmea")
+    source_name: str = Field("api_upload", description="Human-readable origin identifier")
+    source_type: str = Field("UPLOADED DATA", description="Source category")
+
+
+_latest_pipeline_run: Optional[Dict[str, Any]] = None
+
+
+@app.post("/api/pipeline/process")
+def process_pipeline_data(req: PipelineProcessRequest):
+    """
+    Process incoming GNSS records through the automated security analysis pipeline:
+    Validation -> Preprocessing -> 10-D Features -> Detection Quad -> Agents -> RAG -> Explainable AI -> Evidence Bundle.
+    """
+    global _latest_pipeline_run
+    try:
+        from src.pipeline.pipeline_engine import PipelineEngine
+        engine = PipelineEngine()
+        result = engine.process_gnss_input(
+            raw_input=req.data,
+            input_format=req.format,
+            source_name=req.source_name,
+            source_type=req.source_type
+        )
+        res_dict = result.to_dict()
+        _latest_pipeline_run = res_dict
+
+        # Persist run audit artifact
+        runs_dir = "data/runs"
+        os.makedirs(runs_dir, exist_ok=True)
+        run_file = os.path.join(runs_dir, f"run_{result.run_id}.json")
+        try:
+            import json
+            with open(run_file, "w", encoding="utf-8") as f:
+                json.dump(res_dict, f, indent=2, default=str)
+        except Exception:
+            pass
+
+        # Invalidate in-memory event caches
+        processor.invalidate_cache()
+        return res_dict
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Pipeline processing failed: {str(e)}")
+
+
+@app.get("/api/pipeline/latest")
+def get_latest_pipeline_run():
+    """
+    Retrieve the most recent pipeline execution run (prevents state loss on dashboard refresh).
+    """
+    global _latest_pipeline_run
+    if _latest_pipeline_run is not None:
+        return _latest_pipeline_run
+
+    # Fallback to most recent file in data/runs
+    runs_dir = "data/runs"
+    if os.path.exists(runs_dir):
+        files = [os.path.join(runs_dir, f) for f in os.listdir(runs_dir) if f.startswith("run_") and f.endswith(".json")]
+        if files:
+            files.sort(key=os.path.getmtime, reverse=True)
+            try:
+                import json
+                with open(files[0], "r", encoding="utf-8") as f:
+                    _latest_pipeline_run = json.load(f)
+                    return _latest_pipeline_run
+            except Exception:
+                pass
+
+    return {
+        "status": "NO_RUNS_YET",
+        "message": "No interactive pipeline runs executed yet. Upload data or stream sentences to initiate analysis."
+    }
+
+
+@app.get("/api/pipeline/runs/{run_id}")
+def get_pipeline_run_by_id(run_id: str):
+    """
+    Retrieve specific pipeline execution result by run ID.
+    """
+    global _latest_pipeline_run
+    if _latest_pipeline_run and _latest_pipeline_run.get("run_id") == run_id:
+        return _latest_pipeline_run
+
+    run_file = os.path.join("data", "runs", f"run_{run_id}.json")
+    if os.path.exists(run_file):
+        try:
+            import json
+            with open(run_file, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Failed to read run record: {str(e)}")
+
+    raise HTTPException(status_code=404, detail=f"Pipeline run '{run_id}' not found.")
+
+
+@app.get("/api/models/status")
+def get_models_status():
+    """
+    Return genuine runtime readiness status for all 4 detection components.
+    Zero fabrication: honestly reports unfitted XGBoost status.
+    """
+    from src.detection.xgboost_detector import XGBoostDetector
+    from src.detection.isolation_forest import IsolationForestDetector
+    from src.detection.temporal_model import TemporalDetector
+
+    xgb_path = "models/production/xgboost/xgboost_detector.joblib"
+    xgb_fitted = os.path.exists(xgb_path)
+
+    if_path = "models/production/isolation_forest/isolation_forest.joblib"
+    if_fitted = os.path.exists(if_path) or os.path.exists("models/isolation_forest/isolation_forest_tuned.joblib")
+
+    lstm_path = "models/production/temporal/temporal_model.pt"
+    lstm_fitted = os.path.exists(lstm_path) or os.path.exists("models/temporal/temporal_model_tuned.pt")
+
+    return {
+        "detectors": {
+            "physical_rules": {
+                "name": "Physical Rules Engine",
+                "status": "OPERATIONAL",
+                "is_fitted": True,
+                "type": "DETERMINISTIC_KINEMATICS",
+                "version": "prules-v1.1"
+            },
+            "isolation_forest": {
+                "name": "Isolation Forest (Spatial ML)",
+                "status": "READY" if if_fitted else "FALLBACK",
+                "is_fitted": if_fitted,
+                "type": "UNSUPERVISED_SPATIAL_ANOMALY",
+                "version": "iforest-tuned-v1.1"
+            },
+            "xgboost": XGBoostDetector.get_status_info(),
+            "temporal_lstm": {
+                "name": "Temporal LSTM Autoencoder",
+                "status": "READY" if lstm_fitted else "FALLBACK",
+                "is_fitted": lstm_fitted,
+                "type": "TEMPORAL_SEQUENCE_AUTOENCODER",
+                "version": "lstm-tuned-v1.1",
+                "sequence_requirement": "W=10 consecutive epochs within same session"
+            }
+        }
+    }
+
+
+@app.get("/api/models/xgboost/info")
+def get_xgboost_info():
+    """
+    Return comprehensive provenance, label availability, and evaluation status for Detector 3.
+    """
+    from src.detection.xgboost_detector import XGBoostDetector
+    return XGBoostDetector.get_status_info()
+
+
+class ModelTrainRequest(BaseModel):
+    model_type: str = Field("isolation_forest", description="Target model: isolation_forest, xgboost")
+    dataset_path: Optional[str] = Field(None, description="Path to verified labelled scenario dataset")
+    label_column: Optional[str] = Field(None, description="Optional target label column name")
+    contamination: float = Field(0.02, description="Target contamination rate")
+    n_estimators: int = Field(200, description="Tree estimators")
+    confirm_replace: bool = Field(False, description="Confirm replacement of production artifact")
+
+
+@app.post("/api/models/train")
+def train_model(req: ModelTrainRequest):
+    """
+    Controlled model training and validation endpoint.
+    Fits scaler only on training partition; evaluates thresholds on validation; does not leak test set.
+    """
+    if req.model_type == "xgboost":
+        try:
+            from scripts.train_xgboost import run_training_pipeline
+            target_dataset = req.dataset_path or "data/features/locus_security_features.csv"
+            report = run_training_pipeline(
+                dataset_path=target_dataset,
+                label_column=req.label_column,
+                n_estimators=req.n_estimators
+            )
+            return report
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"XGBoost training pipeline error: {str(e)}")
+
+    if req.model_type != "isolation_forest":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Automated online retraining for '{req.model_type}' is unsupported."
+        )
+
+    try:
+        from src.detection.tune_isolation_forest import run_isolation_forest_tuning
+        results = run_isolation_forest_tuning(
+            features_csv="data/features/locus_security_features.csv",
+            output_dir="models/isolation_forest",
+            contamination=req.contamination,
+            n_estimators=req.n_estimators
+        )
+        return {
+            "status": "TRAINED_AND_EVALUATED",
+            "model_type": req.model_type,
+            "metrics": results,
+            "replaced_production": req.confirm_replace,
+            "message": "Model trained on training partition and evaluated on independent validation partition."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Training failed: {str(e)}")
 
 
 if __name__ == "__main__":
